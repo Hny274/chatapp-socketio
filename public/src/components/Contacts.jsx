@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import Logo from "../assets/logo1.png";
+import { IoIosChatboxes } from "react-icons/io";
 
 export default function Contacts({ contacts, currentUser, changeChat }) {
   const [currentSelected, setCurrentSelected] = useState(undefined);
@@ -22,12 +22,12 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
   return (
     <>
       {currentUser && currentUser.avatarImage && currentUser.username && (
-        <div className="w-[30%] overflow-hidden bg-gray-900">
-          <div className="flex items-center justify-center gap-4">
-            <img src={Logo} alt="logo" className="h-8" />
-            <h3 className="text-white">ChatApp</h3>
+        <div className="w-[30%] h-[90vh] overflow-hidden bg-gray-900 border-r-2 border-purple-500 rounded-l-2xl">
+          <div className="flex items-center justify-center mb-3 px-4 py-4">
+            <IoIosChatboxes className="text-purple-500" size={38} />
+            <h1 className="text-white text-2xl w-full ml-4">ChatApp</h1>
           </div>
-          <div className="flex flex-col items-center overflow-auto gap-2 scrollbar-thumb-white scrollbar-track-gray-600">
+          <div className="flex flex-col items-center overflow-auto gap-2 scrollbar-thumb-white scrollbar-track-gray-600 flex-grow h-[68%]">
             {contacts.map((contact, index) => (
               <div
                 key={index}
@@ -38,7 +38,7 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
               >
                 <div>
                   <img
-                    src={`data:image/svg+xml;base64,${contact.avatarImage}`}
+                    src={`${contact.avatarImage}`}
                     alt="avatar"
                     className="h-12"
                   />
@@ -49,17 +49,15 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
               </div>
             ))}
           </div>
-          <div className="flex justify-center items-center gap-8">
-            <div>
-              <img
-                src={`data:image/svg+xml;base64,${currentUser.avatarImage}`}
-                alt="avatar"
-                className="h-16 max-w-full"
-              />
-            </div>
-            <div className="text-white">
-              <h2>{currentUser.username}</h2>
-            </div>
+          <div className="flex items-center w-full border-t-2 border-purple-500 p-4 mt-4">
+            <img
+              src={`${currentUser.avatarImage}`}
+              alt="avatar"
+              className="h-12 mr-3"
+            />
+            <h2 className="text-white text-xl font-semibold">
+              {currentUser.username}
+            </h2>
           </div>
         </div>
       )}

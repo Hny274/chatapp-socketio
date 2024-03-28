@@ -64,8 +64,8 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col justify-center items-center gap-4 bg-gray-800">
-      <div className="container bg-gray-900 flex">
+    <div className="h-[100vh] w-full flex flex-col justify-center items-center bg-gray-800">
+      <div className="bg-gray-900 flex w-[85%] rounded-2xl">
         <Contacts
           contacts={contacts}
           currentUser={currentUser}
