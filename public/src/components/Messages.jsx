@@ -1,15 +1,5 @@
-import React from 'react';
-import styled from 'styled-components';
+import React from "react";
 
 export default function Messages() {
-    return (
-        <Container>
-            Messages
-        </Container>
-    );
+  return <div className="h-80">Messages</div>;
 }
-
-const Container=styled.div`
-    height:80%;
-`;
-

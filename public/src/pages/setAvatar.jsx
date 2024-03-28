@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import styled from "styled-components";
 import axios from "axios";
 import { Buffer } from "buffer";
 import loader from "../assets/loader.webp";
@@ -22,159 +21,106 @@ export default function SetAvatar() {
     theme: "dark",
   };
 
-  // useEffect(() => {
-  //   if (!localStorage.getItem("chat-app-user"))
-  //     navigate("/login");
-  // }, [navigate]);
-
   async function setProfilePicture() {
-        if (selectedAvatar === undefined) {
-            toast.error("Please select an avatar", toastOptions);
-        } else {
-            const user = await JSON.parse(
-                localStorage.getItem("chat-app-user")
-            );
+    try {
+      if (selectedAvatar === undefined) {
+        toast.error("Please select an avatar", toastOptions);
+        return;
+      }
 
-            const { data } = await axios.post(`${setAvatarRoute}/${user._id}`, {
-                image: avatars[selectedAvatar],
-            });
-            console.log(data);
-            if (data.isSet) {
-                user.isAvatarImageSet = true;
-                user.avatarImage = data.image;
-                localStorage.setItem(
-                    "chat-app-user",
-                    JSON.stringify(user)
-                );
-                navigate("/chat");
-            } else {
-                toast.error("Error setting avatar. Please try again.", toastOptions);
-            }
-        }
+      const user = JSON.parse(localStorage.getItem("chat-app-user"));
+
+      const { data } = await axios.post(`${setAvatarRoute}/${user._id}`, {
+        image: avatars[selectedAvatar],
+      });
+
+      if (data.isSet) {
+        user.isAvatarImageSet = true;
+        user.avatarImage = data.image;
+        localStorage.setItem("chat-app-user", JSON.stringify(user));
+        navigate("/");
+      } else {
+        toast.error("Error setting avatar. Please try again.", toastOptions);
+      }
+    } catch (error) {
+      console.error("Error setting avatar:", error);
+      toast.error("An error occurred. Please try again later.", toastOptions);
     }
+  }
 
-useEffect(() => {
-    let isMounted = true; // Flag to track whether the component is still mounted
-  
+  useEffect(() => {
+    let isMounted = true;
+
     const fetchData = async () => {
       try {
-        const data = [];
-        for (let i = 0; i < 4; i++) {
-          const imageResponse = await axios.get(`${api}/${Math.round(Math.random() * 1000)}`, { responseType: 'arraybuffer' });
-          const imageBuffer = Buffer.from(imageResponse.data, 'binary');
-          const base64Image = imageBuffer.toString('base64');
-          data.push(base64Image);
-        }
-        if (isMounted) { // Check if the component is still mounted before updating state
+        const data = await Promise.all(
+          Array.from({ length: 4 }, async () => {
+            const response = await axios.get(
+              `${api}/${Math.round(Math.random() * 1000)}`,
+              { responseType: "arraybuffer" }
+            );
+            const imageBuffer = Buffer.from(response.data, "binary");
+            return `data:image/svg+xml;base64,${imageBuffer.toString(
+              "base64"
+            )}`;
+          })
+        );
+
+        if (isMounted) {
           setAvatars(data);
           setIsLoading(false);
         }
       } catch (error) {
-        console.error('Error fetching data:', error);
-        // Handle error, e.g., set an error state or display a toast message
+        console.error("Error fetching data:", error);
+        setIsLoading(false);
+        toast.error("An error occurred while fetching avatars.", toastOptions);
       }
     };
-  
+
     fetchData();
-  
-    // Cleanup function to run when the component unmounts
+
     return () => {
-      isMounted = false; // Set the flag to indicate that the component is unmounted
+      isMounted = false;
     };
   }, [api]);
-  
-  
+
   return (
     <>
       {isLoading ? (
-        <Container>
-          <img src={loader} alt="loader" className="loader" />
-        </Container>
+        <div className="flex justify-center items-center flex-col h-screen bg-black">
+          <img src={loader} alt="loader" className="max-w-full" />
+        </div>
       ) : (
-        <Container>
-          <div className="title-container">
-            <h1>Pick an Avatar as your profile picture</h1>
+        <div className="flex justify-center items-center flex-col h-screen bg-black">
+          <div className="text-white mb-8">
+            <h1 className="text-3xl font-bold">
+              Pick an Avatar as your profile picture
+            </h1>
           </div>
-          <div className="avatars">
-            {avatars.map((avatar, index) => {
-              return (
-                <div
-                  className={`avatar ${
-                    selectedAvatar === index ? "selected" : ""
-                  }`}
-                >
-                  <img
-                    src={`data:image/svg+xml;base64,${avatar}`}
-                    alt="avatar"
-                    key={avatar}
-                    onClick={() => setSelectedAvatar(index)}
-                  />
-                </div>
-              );
-            })}
+          <div className="flex gap-8">
+            {avatars.map((avatar, index) => (
+              <div
+                key={index}
+                className={`avatar rounded-full p-2 border-4 cursor-pointer ${
+                  selectedAvatar === index
+                    ? "border-purple-500"
+                    : "border-transparent"
+                }`}
+                onClick={() => setSelectedAvatar(index)}
+              >
+                <img src={avatar} alt="avatar" className="w-24 h-24" />
+              </div>
+            ))}
           </div>
-          <button onClick={setProfilePicture} className="submit-btn">
+          <button
+            onClick={setProfilePicture}
+            className="mt-8 py-2 px-4 bg-blue-500 text-white font-bold rounded hover:bg-blue-600"
+          >
             Set as Profile Picture
           </button>
           <ToastContainer />
-        </Container>
+        </div>
       )}
     </>
   );
 }
-
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  gap: 3rem;
-  background-color: black;
-  height: 100vh;
-  width: 100vw;
-
-  .loader {
-    max-inline-size: 100%;
-  }
-
-  .title-container {
-    h1 {
-      color: white;
-    }
-  }
-  .avatars {
-    display: flex;
-    gap: 2rem;
-
-    .avatar {
-      border: 0.4rem solid transparent;
-      padding: 0.4rem;
-      border-radius: 5rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      transition: 0.5s ease-in-out;
-      img {
-        height: 6rem;
-        transition: 0.5s ease-in-out;
-      }
-    }
-    .selected {
-      border: 0.4rem solid #4e0eff;
-    }
-  }
-  .submit-btn {
-    background-color: #4e0eff;
-    color: white;
-    padding: 1rem 2rem;
-    border: none;
-    font-weight: bold;
-    cursor: pointer;
-    border-radius: 0.4rem;
-    font-size: 1rem;
-    text-transform: uppercase;
-    &:hover {
-      background-color: #4e0eff;
-    }
-  }
-`;

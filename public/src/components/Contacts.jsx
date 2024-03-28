@@ -1,153 +1,68 @@
 import React, { useState, useEffect } from "react";
-import styled from "styled-components";
 import Logo from "../assets/logo1.png";
 
-export default function Contacts({ contacts, currentUser, changeChat}) {
-    const [currentUserName,setCurrentUserName]=useState(undefined);
-    const [currentUserImage,setCurrentUserImage]=useState(undefined);
-    const [currentSelected,setCurrentSelected]=useState(undefined);
-    useEffect(()=>{
-        //console.log(contacts);
-        if(currentUser){
-            setCurrentUserImage(currentUser.avatarImage);
-            setCurrentUserName(currentUser.username);
-        }
-    },[currentUser]);
+export default function Contacts({ contacts, currentUser, changeChat }) {
+  const [currentSelected, setCurrentSelected] = useState(undefined);
 
-    const changeCurrentChat=(index,contacts)=>{
-        setCurrentSelected(index);
-        changeChat(contacts);
-    };
-  return <>
-  {
-    currentUserImage && currentUserName && (
-        <Container>
-            <div className="brand">
-                <img src={Logo} alt="logo"/>
-                <h3>ChatApp</h3>
-            </div>
-            <div className="contacts">
-                {
-                    contacts.map((contact,index)=>{
-                        return (
-                            <div className={`contact ${index===currentSelected ? "selected" : ""}`}
-                             key={index}
-                             onClick={()=>changeCurrentChat(index,contact)}
-                             >
-                                <div className="avatar">
-                                <img
-                                    src={`data:image/svg+xml;base64,${contact.avatarImage}`}
-                                    alt="avatar"
-                                />
-                                </div>
-                                <div className="username">
-                                    <h3>{contact.username}</h3>
-                                </div> 
-                             </div>
-                        );
-                    }) }
-            </div>
-            <div className="current-user">
-                <div className="avatar">
-                    <img
-                        src={`data:image/svg+xml;base64,${currentUserImage}`}
-                        alt="avatar"
-                    />
+  const [currentUserName, setCurrentUserName] = useState(undefined);
+  const [currentUserImage, setCurrentUserImage] = useState(undefined);
+
+  useEffect(() => {
+    if (currentUser) {
+      setCurrentUserName(currentUser.avatarImage);
+      setCurrentUserImage(currentUser.username);
+    }
+  }, [currentUser]);
+
+  const changeCurrentChat = (index, contacts) => {
+    setCurrentSelected(index);
+    changeChat(contacts);
+  };
+
+  return (
+    <>
+      {currentUser && currentUser.avatarImage && currentUser.username && (
+        <div className="w-[30%] overflow-hidden bg-gray-900">
+          <div className="flex items-center justify-center gap-4">
+            <img src={Logo} alt="logo" className="h-8" />
+            <h3 className="text-white">ChatApp</h3>
+          </div>
+          <div className="flex flex-col items-center overflow-auto gap-2 scrollbar-thumb-white scrollbar-track-gray-600">
+            {contacts.map((contact, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-4 cursor-pointer w-11/12 bg-gray-800 rounded p-2 transition duration-500 ease-in-out ${
+                  index === currentSelected ? "bg-purple-600" : ""
+                }`}
+                onClick={() => changeCurrentChat(index, contact)}
+              >
+                <div>
+                  <img
+                    src={`data:image/svg+xml;base64,${contact.avatarImage}`}
+                    alt="avatar"
+                    className="h-12"
+                  />
                 </div>
-                <div className="username">
-                    <h2>{currentUserName}</h2>
+                <div className="text-white">
+                  <h3>{contact.username}</h3>
                 </div>
+              </div>
+            ))}
+          </div>
+          <div className="flex justify-center items-center gap-8">
+            <div>
+              <img
+                src={`data:image/svg+xml;base64,${currentUser.avatarImage}`}
+                alt="avatar"
+                className="h-16 max-w-full"
+              />
             </div>
-        </Container>
-    )
-  }
-  </>;
+            <div className="text-white">
+              <h2>{currentUser.username}</h2>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
-
-const Container=styled.div`
-    display:grid;
-    grid-template-rows:10% 75% 15%;
-    overflow:hidden;
-    background-color:#080420;
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        justify-content: center;
-        img {
-            height: 2rem;
-        }
-        h3 {
-          color: white;
-        }
-    }
-
-    .contacts {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow: auto;
-        gap: 0.8rem;
-        &::-webkit-scrollbar {
-          width: 0.2rem;
-          &-thumb {
-            background-color: #ffffff39;
-            width: 0.1rem;
-            border-radius: 1rem;
-          }
-        }
-    
-    .contact {
-        background-color: #ffffff34;
-        min-height: 5rem;
-        cursor: pointer;
-        width: 90%;
-        border-radius: 0.2rem;
-        padding: 0.4rem;
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        transition: 0.5s ease-in-out;
-        .avatar {
-            img {
-                height: 3rem;
-            }
-        }
-        .username {
-            h3 {
-              color: white;
-            }
-          }
-        }
-        .selected {
-          background-color: #9a86f3;
-        }
-    }
-
-    .current-user {
-        background-color: #0d0d30;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2rem;
-        .avatar {
-          img {
-            height: 4rem;
-            max-inline-size: 100%;
-          }
-        }
-        .username {
-          h2 {
-            color: white;
-          }
-        }
-        @media screen and (min-width: 720px) and (max-width: 1080px) {
-            gap: 0.5rem;
-            .username {
-              h2 {
-                font-size: 1rem;
-              }
-            }
-        }
-    }
-`;
