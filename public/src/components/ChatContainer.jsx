@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from "react";
-import Logout from "./Logout";
 import ChatInput from "./ChatInput";
 import axios from "axios";
 import { getAllMessagesRoute, sendMessageRoute } from "../utils/APIRoutes";
@@ -65,32 +64,20 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
   return (
     <>
       {currentChat && (
-        <div className="grid grid-rows-10-80-10 overflow-hidden">
-          <div className="flex justify-between items-center px-8">
-            <div className="flex items-center space-x-4">
-              <div>
-                <img
-                  src={`data:image/svg+xml;base64,${currentChat.avatarImage}`}
-                  alt="avatar"
-                  className="h-12"
-                />
-              </div>
-              <div className="text-white">
-                <h3>{currentChat.username}</h3>
-              </div>
-            </div>
-            <Logout />
-          </div>
-          <div className="px-8 flex flex-col gap-4 overflow-auto">
+        <div className="flex flex-col h-[88vh] w-[72%] bg-[#1b2028]">
+          <div className="px-8 flex flex-col gap-4 overflow-y-scroll h-full pb-2 bg-[#1b2028] my-4">
             {messages.map((msg, index) => (
               <div
                 key={uuidv4()}
+                ref={scrollRef}
                 className={`${msg.fromSelf ? "justify-end" : "justify-start"}`}
               >
                 <div className="flex">
                   <div
-                    className={`max-w-[40%] overflow-wrap break-word p-4 rounded-lg text-gray-400 ${
-                      msg.fromSelf ? "bg-purple-500" : "bg-indigo-500"
+                    className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
+                      msg.fromSelf
+                        ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
+                        : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
                     }`}
                   >
                     <p>{msg.message}</p>
@@ -98,7 +85,6 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
                 </div>
               </div>
             ))}
-            <div ref={scrollRef}></div>
           </div>
           <ChatInput handleSendMsg={handleSendMsg} />
         </div>

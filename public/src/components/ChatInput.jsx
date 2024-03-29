@@ -1,19 +1,12 @@
 import React, { useState } from "react";
-import { BsEmojiSmileFill } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
-import Picker from "emoji-picker-react";
+import { MdOutlineKeyboardVoice } from "react-icons/md";
+import { LuUpload } from "react-icons/lu";
+import { TiMediaStopOutline } from "react-icons/ti";
+
 export default function ChatInput({ handleSendMsg }) {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [msg, setMsg] = useState("");
-
-  const handleEmojiPickerHideShow = () => {
-    setShowEmojiPicker(!showEmojiPicker);
-  };
-
-  const handleEmojiClick = (_, emoji) => {
-    let message = msg + emoji.emoji;
-    setMsg(message);
-  };
+  const [isListening, setIsListening] = useState(false);
 
   const sendChat = (event) => {
     event.preventDefault();
@@ -22,36 +15,61 @@ export default function ChatInput({ handleSendMsg }) {
       setMsg("");
     }
   };
+  const handleSpeechRecognition = () => {
+    const recognition = new window.webkitSpeechRecognition();
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+    } else {
+      recognition.lang = "en-US";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+      };
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        setMsg(transcript);
+      };
+      recognition.start();
+    }
+  };
 
   return (
-    <div className="flex items-center bg-gray-900 px-4 py-2">
-      <div className="flex items-center text-white">
-        <div className="relative">
-          <BsEmojiSmileFill
-            onClick={handleEmojiPickerHideShow}
-            className="text-yellow-400 cursor-pointer"
-          />
-          {showEmojiPicker && (
-            <Picker
-              className="absolute top-[-1000px] bg-gray-900 shadow-md border border-purple-500 z-10 max-h-40 overflow-y-auto"
-              onEmojiClick={handleEmojiClick}
-            />
-          )}
-        </div>
-      </div>
-      <form className="flex flex-grow ml-4" onSubmit={(e) => sendChat(e)}>
+    <div className="flex items-center bg-[#242930] px-6 py-3 mx-8 mb-4 rounded-full">
+      <form className="flex flex-grow" onSubmit={(e) => sendChat(e)}>
         <input
           type="text"
           placeholder="Type your message here"
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
-          className="flex-grow h-10 bg-transparent text-white outline-none px-4 placeholder-gray-400"
+          className="flex-grow bg-transparent text-white outline-none py-1 placeholder-gray-400"
         />
         <button
-          type="submit"
-          className="ml-2 flex items-center justify-center bg-purple-500 rounded-full p-2"
+          className="ml-4 flex items-center justify-center"
+          onClick={handleSpeechRecognition}
         >
-          <IoMdSend className="text-white" />
+          {isListening ? (
+            <TiMediaStopOutline
+              className="text-white/70 hover:text-purple-500"
+              size={24}
+            />
+          ) : (
+            <MdOutlineKeyboardVoice
+              className="text-white/70 hover:text-purple-500"
+              size={24}
+            />
+          )}
+        </button>
+        <button className="ml-4 flex items-center justify-center">
+          <LuUpload className="text-white/70 hover:text-purple-500" size={22} />
+        </button>
+        <button type="submit" className="ml-5 flex items-center justify-center">
+          <IoMdSend className="text-white/70 hover:text-purple-500" size={24} />
         </button>
       </form>
     </div>

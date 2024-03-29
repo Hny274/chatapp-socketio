@@ -2,11 +2,9 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Buffer } from "buffer";
 import loader from "../assets/loader.webp";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { useNavigate } from "react-router-dom";
 import { setAvatarRoute } from "../utils/APIRoutes";
-
+import toast from "react-hot-toast";
 export default function SetAvatar() {
   const api = `https://api.multiavatar.com/4645646`;
   const navigate = useNavigate();
@@ -24,7 +22,7 @@ export default function SetAvatar() {
   async function setProfilePicture() {
     try {
       if (selectedAvatar === undefined) {
-        toast.error("Please select an avatar", toastOptions);
+        toast.error("Please select an avatar");
         return;
       }
 
@@ -40,11 +38,11 @@ export default function SetAvatar() {
         localStorage.setItem("chat-app-user", JSON.stringify(user));
         navigate("/");
       } else {
-        toast.error("Error setting avatar. Please try again.", toastOptions);
+        toast.error("Error setting avatar. Please try again.");
       }
     } catch (error) {
       console.error("Error setting avatar:", error);
-      toast.error("An error occurred. Please try again later.", toastOptions);
+      toast.error("An error occurred. Please try again later.");
     }
   }
 
@@ -118,7 +116,6 @@ export default function SetAvatar() {
           >
             Set as Profile Picture
           </button>
-          <ToastContainer />
         </div>
       )}
     </>

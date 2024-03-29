@@ -6,6 +6,7 @@ import { allUsersRoute, host } from "../utils/APIRoutes";
 import ChatContainer from "../components/ChatContainer";
 import Contacts from "../components/Contacts";
 import Welcome from "../components/Welcome";
+import { IoIosChatboxes } from "react-icons/io";
 
 export default function Chat() {
   const socket = useRef();
@@ -30,7 +31,7 @@ export default function Chat() {
       }
     };
     fetchData();
-  }, [navigate]); // Empty dependency array to run the effect only once
+  }, [navigate]);
 
   useEffect(() => {
     if (currentUser) {
@@ -64,8 +65,24 @@ export default function Chat() {
   };
 
   return (
-    <div className="h-[100vh] w-full flex flex-col justify-center items-center bg-gray-800">
-      <div className="bg-gray-900 flex w-[85%] rounded-2xl">
+    <div className="h-[100vh] w-full flex flex-col justify-center items-center bg-[#1b2028]">
+      <div className="w-full flex justify-between items-center h-[12vh]">
+        <div className="flex items-center justify-center bg-[#1b2028] w-[28%] h-full border-b border-r border-b-[#75767780] border-r-[#75767780]">
+          <IoIosChatboxes className="text-purple-500 ml-4" size={40} />
+          <h1 className="text-white text-2xl w-full ml-3">ChatApp</h1>
+        </div>
+        {currentChat && (
+          <div className="flex justify-start items-center pb-4 px-6 py-4 bg-[#1b2028] w-[72%] h-full relative border-b border-b-[#75767780]">
+            <img
+              src={`${currentChat?.avatarImage}`}
+              alt="avatar"
+              className="h-10"
+            />
+            <p className="text-white text-2xl ml-4">{currentChat?.username}</p>
+          </div>
+        )}
+      </div>
+      <div className="bg-gray-200 flex w-full h-[88vh]">
         <Contacts
           contacts={contacts}
           currentUser={currentUser}

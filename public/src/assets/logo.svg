@@ -90,7 +90,7 @@
 <stop stop-color="#013FC8"/>
 <stop offset="1" stop-color="#0056E9"/>
 </linearGradient>
-<radialGradient id="paint6_radial_8_55" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(271.189 655.377) rotate(-40.9741) scale(296.693 387.291)">
+<radialGradient id="paint6_radial_8_55" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="trangray(271.189 655.377) rotate(-40.9741) scale(296.693 387.291)">
 <stop offset="0.405211" stop-color="#002881"/>
 <stop offset="1" stop-color="white" stop-opacity="0"/>
 </radialGradient>

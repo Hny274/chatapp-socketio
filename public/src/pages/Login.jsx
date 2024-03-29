@@ -1,15 +1,14 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { loginRoute } from "../utils/APIRoutes";
 import { IoIosChatboxes } from "react-icons/io";
+import toast from "react-hot-toast";
 
 function Login() {
   const navigate = useNavigate();
   const [values, setValues] = useState({
-    username: "", // Changed from email to username
+    username: "",
     password: "",
   });
 
@@ -24,10 +23,10 @@ function Login() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (handleValidation()) {
-      const { password, username } = values; // Changed from email to username
+      const { password, username } = values;
       try {
         const { data } = await axios.post(loginRoute, {
-          username, // Changed from email to username
+          username,
           password,
         });
         if (data.status === false) {
@@ -45,9 +44,8 @@ function Login() {
   };
 
   const handleValidation = () => {
-    const { password, username } = values; // Changed from email to username
+    const { password, username } = values;
     if (password === "" || username === "") {
-      // Changed from email to username
       toast.error("Username and password are required", toastOptions);
       return false;
     }
@@ -60,33 +58,33 @@ function Login() {
 
   return (
     <>
-      <div className="h-[100vh] w-full flex flex-col justify-center items-center gap-4 bg-gray-800">
-        <div className="bg-gray-900 rounded-lg p-8 w-[33%]">
-          <div className="flex items-center justify-center mb-3">
-            <IoIosChatboxes className="text-purple-500" size={60} />
-            <h1 className="text-white text-4xl w-full ml-4">ChatApp</h1>
-          </div>
+      <div className="h-[100vh] w-full flex flex-col justify-center items-center gap-4 bg-gray-900">
+        <div className="rounded-lg p-6 w-[33%] border shadow bg-gray-100">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
+            <div className="flex items-center justify-center mb-3">
+              <IoIosChatboxes className="text-purple-500" size={60} />
+              <p className="text-4xl w-full ml-4 font-semibold">ChatApp</p>
+            </div>
             <div>
               <label
-                htmlFor="username" // Changed from email to username
-                className="block font-medium text-gray-300"
+                htmlFor="username"
+                className="block font-medium text-gray-800"
               >
                 Username
               </label>
               <input
-                type="text" // Changed from email to text
-                id="username" // Changed from email to username
-                name="username" // Changed from email to username
-                placeholder="Enter your username" // Updated placeholder text
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md bg-transparent border-2 text-white border-purple-800 px-3 py-3 shadow-sm outline-none"
+                className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
             <div>
               <label
                 htmlFor="password"
-                className="block font-medium text-gray-300"
+                className="block font-medium text-gray-800"
               >
                 Password
               </label>
@@ -94,27 +92,29 @@ function Login() {
                 type="password"
                 id="password"
                 name="password"
-                placeholder="********"
+                placeholder="**********"
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md bg-transparent border-2 text-white border-purple-800 px-3 py-3 shadow-sm outline-none"
+                className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
             <button
               type="submit"
-              className="px-3 mt-2 py-2 rounded-md bg-purple-600 mb-4"
+              className="px-3 mt-2 py-2 rounded-md bg-purple-600 text-white mb-4 text-xl transition-animate hover:bg-purple-700"
             >
               Login
             </button>
           </form>
-          <p className="text-white text-center w-full">
+          <p className="text-center w-full">
             Don't have an account?
-            <Link to="/register" className="text-purple-500 ml-2">
+            <Link
+              to="/register"
+              className="text-purple-500 ml-2 hover:underline"
+            >
               Register
             </Link>
           </p>
         </div>
       </div>
-      <ToastContainer />
     </>
   );
 }

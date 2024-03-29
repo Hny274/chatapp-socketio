@@ -1,27 +1,16 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { registerRoute } from "../utils/APIRoutes";
 import { IoIosChatboxes } from "react-icons/io";
-
+import toast from "react-hot-toast";
 function Register() {
   const navigate = useNavigate();
   const [values, setValues] = useState({
     username: "",
     email: "",
     password: "",
-    confirmPassword: "",
   });
-
-  const toastOptions = {
-    position: "bottom-right",
-    autoClose: 8000,
-    pauseOnHover: true,
-    draggable: true,
-    theme: "dark",
-  };
 
   const handleChange = (event) => {
     const { name, value } = event.target;
@@ -39,38 +28,29 @@ function Register() {
           password,
         });
         if (data.status === false) {
-          toast.error(data.msg, toastOptions);
+          toast.error(data.msg);
         } else {
           localStorage.setItem("chat-app-user", JSON.stringify(data.user));
-          toast.success("Registration successful!", toastOptions);
+          toast.success("Registration successful!");
           navigate("/");
         }
       } catch (error) {
         console.error("Register Error:", error);
-        toast.error("An error occurred. Please try again later.", toastOptions);
+        toast.error("An error occurred. Please try again later.");
       }
     }
   };
 
   const handleValidation = () => {
-    const { password, confirmPassword, username, email } = values;
-    if (password !== confirmPassword) {
-      toast.error("Password and Confirm Password should match.", toastOptions);
-      return false;
-    } else if (username.length < 3) {
-      toast.error(
-        "Username should be at least 3 characters long.",
-        toastOptions
-      );
+    const { password, username, email } = values;
+    if (username.length < 3) {
+      toast.error("Username should be at least 3 characters long.");
       return false;
     } else if (password.length < 8) {
-      toast.error(
-        "Password should be at least 8 characters long.",
-        toastOptions
-      );
+      toast.error("Password should be at least 8 characters long.");
       return false;
     } else if (email === "") {
-      toast.error("Email is required.", toastOptions);
+      toast.error("Email is required.");
       return false;
     }
     return true;
@@ -78,17 +58,17 @@ function Register() {
 
   return (
     <>
-      <div className="h-[100vh] w-full flex flex-col justify-center items-center gap-4 bg-gray-800">
-        <div className="bg-gray-900 rounded-lg p-8 w-[33%]">
-          <div className="flex items-center justify-center mb-3">
-            <IoIosChatboxes className="text-purple-500" size={60} />
-            <h1 className="text-white text-4xl w-full ml-4">ChatApp</h1>
-          </div>
+      <section className="min-h-[100vh] w-full flex flex-col justify-center items-center gap-4 bg-gray-900 py-10">
+        <div className="rounded-lg p-6 w-[33%] border shadow bg-gray-100">
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
-            <div>
+            <div className="flex items-center justify-center mb-3">
+              <IoIosChatboxes className="text-purple-500" size={60} />
+              <p className="text-4xl w-full ml-4">ChatApp</p>
+            </div>
+            <div className="">
               <label
                 htmlFor="username"
-                className="block font-medium text-gray-300"
+                className="block font-medium text-gray-800"
               >
                 Username
               </label>
@@ -99,13 +79,13 @@ function Register() {
                 value={values.username}
                 placeholder="username"
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md bg-transparent border-2 text-white border-purple-800 px-3 py-3 shadow-sm outline-none"
+                className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
             <div>
               <label
                 htmlFor="email"
-                className="block font-medium text-gray-300"
+                className="block font-medium text-gray-800"
               >
                 Email
               </label>
@@ -116,13 +96,13 @@ function Register() {
                 value={values.email}
                 placeholder="hunny@gmail.com"
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md bg-transparent border-2 text-white border-purple-800 px-3 py-3 shadow-sm outline-none"
+                className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
             <div>
               <label
                 htmlFor="password"
-                className="block font-medium text-gray-300"
+                className="block font-medium text-gray-800"
               >
                 Password
               </label>
@@ -131,44 +111,27 @@ function Register() {
                 id="password"
                 name="password"
                 value={values.password}
-                placeholder="********"
+                placeholder="***********"
                 onChange={handleChange}
-                className="mt-1 w-full rounded-md bg-transparent border-2 text-white border-purple-800 px-3 py-3 shadow-sm outline-none"
+                className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block font-medium text-gray-300"
-              >
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={values.confirmPassword}
-                placeholder="********"
-                onChange={handleChange}
-                className="mt-1 w-full rounded-md bg-transparent border-2 text-white border-purple-800 px-3 py-3 shadow-sm outline-none"
-              />
-            </div>
+
             <button
               type="submit"
-              className="px-3 mt-2 py-2 rounded-md bg-purple-600 mb-4"
+              className="px-3 mt-2 py-2 rounded-md bg-purple-600 text-white mb-4 text-xl transition-animate hover:bg-purple-700"
             >
               Register
             </button>
           </form>
-          <p className="text-white text-center w-full">
+          <p className="text-center w-full">
             Already have an account?
-            <Link to="/login" className="text-purple-500 ml-2">
+            <Link to="/login" className="text-purple-500 ml-2 hover:underline">
               Login
             </Link>
           </p>
         </div>
-      </div>
-      <ToastContainer />
+      </section>
     </>
   );
 }

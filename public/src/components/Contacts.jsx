@@ -1,18 +1,8 @@
-import React, { useState, useEffect } from "react";
-import { IoIosChatboxes } from "react-icons/io";
+import React, { useState } from "react";
+import Logout from "./Logout";
 
 export default function Contacts({ contacts, currentUser, changeChat }) {
   const [currentSelected, setCurrentSelected] = useState(undefined);
-
-  const [currentUserName, setCurrentUserName] = useState(undefined);
-  const [currentUserImage, setCurrentUserImage] = useState(undefined);
-
-  useEffect(() => {
-    if (currentUser) {
-      setCurrentUserName(currentUser.avatarImage);
-      setCurrentUserImage(currentUser.username);
-    }
-  }, [currentUser]);
 
   const changeCurrentChat = (index, contacts) => {
     setCurrentSelected(index);
@@ -22,16 +12,12 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
   return (
     <>
       {currentUser && currentUser.avatarImage && currentUser.username && (
-        <div className="w-[30%] h-[90vh] overflow-hidden bg-gray-900 border-r-2 border-purple-500 rounded-l-2xl">
-          <div className="flex items-center justify-center mb-3 px-4 py-4">
-            <IoIosChatboxes className="text-purple-500" size={38} />
-            <h1 className="text-white text-2xl w-full ml-4">ChatApp</h1>
-          </div>
-          <div className="flex flex-col items-center overflow-auto gap-2 scrollbar-thumb-white scrollbar-track-gray-600 flex-grow h-[68%]">
+        <div className="flex flex-col h-[88vh] w-[28%] bg-[#242930] border-r border-r-[#75767780]">
+          <div className="flex flex-col w-full items-center overflow-auto gap-2 flex-grow pt-3">
             {contacts.map((contact, index) => (
               <div
                 key={index}
-                className={`flex items-center gap-4 cursor-pointer w-11/12 bg-gray-800 rounded p-2 transition duration-500 ease-in-out ${
+                className={`flex items-center gap-4 cursor-pointer w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
                   index === currentSelected ? "bg-purple-600" : ""
                 }`}
                 onClick={() => changeCurrentChat(index, contact)}
@@ -40,24 +26,25 @@ export default function Contacts({ contacts, currentUser, changeChat }) {
                   <img
                     src={`${contact.avatarImage}`}
                     alt="avatar"
-                    className="h-12"
+                    className="h-10"
                   />
                 </div>
-                <div className="text-white">
-                  <h3>{contact.username}</h3>
-                </div>
+                <p className="text-white text-lg">{contact.username}</p>
               </div>
             ))}
           </div>
-          <div className="flex items-center w-full border-t-2 border-purple-500 p-4 mt-4">
+          <div className="flex items-center justify-center bg-[#1b2028] m-2 rounded-2xl p-4">
             <img
               src={`${currentUser.avatarImage}`}
               alt="avatar"
               className="h-12 mr-3"
             />
-            <h2 className="text-white text-xl font-semibold">
-              {currentUser.username}
-            </h2>
+            <div className="flex justify-between items-center w-full">
+              <h2 className="text-white text-xl font-semibold">
+                {currentUser.username}
+              </h2>
+              <Logout />
+            </div>
           </div>
         </div>
       )}

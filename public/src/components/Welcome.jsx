@@ -3,7 +3,7 @@ import Robot from "../assets/robot.gif";
 
 export default function Welcome({ currentUser }) {
   return (
-    <div className="flex justify-center items-center w-[70%] flex-col">
+    <div className="flex justify-center items-center w-[72%] flex-col bg-[#1b2028]">
       <img src={Robot} alt="Robot" className="h-80" />
       <h1 className="text-purple-600 text-3xl font-bold mb-2">
         Welcome,{" "}
