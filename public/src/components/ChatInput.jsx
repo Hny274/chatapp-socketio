@@ -1,12 +1,41 @@
 import React, { useState } from "react";
 import { IoMdSend } from "react-icons/io";
-import { MdOutlineKeyboardVoice } from "react-icons/md";
 import { LuUpload } from "react-icons/lu";
-import { TiMediaStopOutline } from "react-icons/ti";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import { Cloudinary } from "cloudinary-core";
 
 export default function ChatInput({ handleSendMsg }) {
   const [msg, setMsg] = useState("");
-  const [isListening, setIsListening] = useState(false);
+  const cloudinary = new Cloudinary({ cloud_name: "db7j1qgnq" });
+
+  const handleFileUpload = async (event) => {
+    if (!event.target.files[0]) {
+      alert("Please select a file.");
+      return;
+    }
+    try {
+      const formData = new FormData();
+      formData.append("file", event.target.files[0]);
+      formData.append("upload_preset", "zhgsajor");
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/db7j1qgnq/image/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Upload success:", response.data);
+
+      const imageUrl = cloudinary.url(response.data.public_id);
+      handleSendMsg(imageUrl);
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  };
 
   const sendChat = (event) => {
     event.preventDefault();
@@ -15,29 +44,6 @@ export default function ChatInput({ handleSendMsg }) {
       setMsg("");
     }
   };
-  // const handleSpeechRecognition = () => {
-  //   const recognition = new window.webkitSpeechRecognition();
-  //   if (isListening) {
-  //     recognition.stop();
-  //     setIsListening(false);
-  //   } else {
-  //     recognition.lang = "en-US";
-  //     recognition.interimResults = false;
-  //     recognition.maxAlternatives = 1;
-
-  //     recognition.onstart = () => {
-  //       setIsListening(true);
-  //     };
-  //     recognition.onend = () => {
-  //       setIsListening(false);
-  //     };
-  //     recognition.onresult = (event) => {
-  //       const transcript = event.results[0][0].transcript;
-  //       setMsg(transcript);
-  //     };
-  //     recognition.start();
-  //   }
-  // };
 
   return (
     <div className="flex items-center bg-[#242930] px-6 py-3 mx-8 mb-4 rounded-full">
@@ -49,25 +55,10 @@ export default function ChatInput({ handleSendMsg }) {
           onChange={(e) => setMsg(e.target.value)}
           className="flex-grow bg-transparent text-white outline-none py-1 placeholder-gray-400"
         />
-        {/* <button
-          className="ml-4 flex items-center justify-center"
-          onClick={handleSpeechRecognition}
-        >
-          {isListening ? (
-            <TiMediaStopOutline
-              className="text-white/70 hover:text-purple-500"
-              size={24}
-            />
-          ) : (
-            <MdOutlineKeyboardVoice
-              className="text-white/70 hover:text-purple-500"
-              size={24}
-            />
-          )}
-        </button> */}
-        <button className="ml-4 flex items-center justify-center">
+        <input type="file" id="file" onChange={handleFileUpload} hidden />
+        <label htmlFor="file" className="ml-4 flex items-center justify-center">
           <LuUpload className="text-white/70 hover:text-purple-500" size={22} />
-        </button>
+        </label>
         <button type="submit" className="ml-5 flex items-center justify-center">
           <IoMdSend className="text-white/70 hover:text-purple-500" size={24} />
         </button>

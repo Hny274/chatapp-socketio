@@ -2,12 +2,14 @@ import React, { useState, useEffect, useRef } from "react";
 import ChatInput from "./ChatInput";
 import axios from "axios";
 import { getAllMessagesRoute, sendMessageRoute } from "../utils/APIRoutes";
+import { IoMdClose } from "react-icons/io";
 
 export default function ChatContainer({ currentChat, currentUser, socket }) {
   const [messages, setMessages] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const scrollRef = useRef();
-
+  const [viewImage, setViewImage] = useState(false);
+  const [image, setImage] = useState();
   useEffect(() => {
     const fetchMessages = async () => {
       try {
@@ -69,6 +71,22 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
 
   return (
     <>
+      {viewImage && (
+        <div className="h-[100vh] w-full bg-black/40 backdrop-blur-sm absolute top-0 z-30 flex justify-center items-center">
+          <div className="w-[50%] flex justify-end items-end flex-col">
+            <button
+              onClick={() => {
+                setImage();
+                setViewImage(false);
+              }}
+              className="bg-purple-600 text-white p-3 mb-3 rounded-full relative"
+            >
+              <IoMdClose />
+            </button>
+            <img src={image} alt="" className="w-full" />
+          </div>
+        </div>
+      )}
       {currentChat && (
         <div className="flex flex-col h-[88vh] w-[72%] bg-[#1b2028]">
           <div
@@ -81,20 +99,36 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
                 ref={scrollRef}
                 className={`${msg.fromSelf ? "justify-end" : "justify-start"}`}
               >
-                <div className="flex flex-col">
-                  <div
-                    className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
-                      msg.fromSelf
-                        ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
-                        : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
-                    }`}
-                  >
-                    <p>{msg.message}</p>
-                  </div>
+                <div className="flex flex-col items-start justify-end">
+                  {!msg.message?.includes("cloudinary") ? (
+                    <div
+                      className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
+                        msg.fromSelf
+                          ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
+                          : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
+                      }`}
+                    >
+                      <p>{msg.message}</p>
+                    </div>
+                  ) : (
+                    <img
+                      onClick={() => {
+                        setImage(msg.message);
+                        setViewImage(true);
+                      }}
+                      src={msg.message}
+                      className={`max-w-[40%] ${
+                        msg.fromSelf
+                          ? "ml-auto rounded-l-xl rounded-t-xl text-white border-4 border-[#373b41]"
+                          : "border-purple-600 border-4 rounded-r-xl rounded-t-xl text-gray-100"
+                      }`}
+                      alt=""
+                    />
+                  )}
                   <p
-                    className={`${
-                      msg.fromSelf ? "ml-auto" : "mr-auto"
-                    } text-white/60 text-sm mt-1`}
+                    className={`text-white/60 text-sm mt-1 ${
+                      msg.fromSelf && "ml-auto"
+                    }`}
                   >
                     {formatDate(msg.timestamp)}
                   </p>
