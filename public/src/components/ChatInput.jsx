@@ -15,29 +15,29 @@ export default function ChatInput({ handleSendMsg }) {
       setMsg("");
     }
   };
-  const handleSpeechRecognition = () => {
-    const recognition = new window.webkitSpeechRecognition();
-    if (isListening) {
-      recognition.stop();
-      setIsListening(false);
-    } else {
-      recognition.lang = "en-US";
-      recognition.interimResults = false;
-      recognition.maxAlternatives = 1;
+  // const handleSpeechRecognition = () => {
+  //   const recognition = new window.webkitSpeechRecognition();
+  //   if (isListening) {
+  //     recognition.stop();
+  //     setIsListening(false);
+  //   } else {
+  //     recognition.lang = "en-US";
+  //     recognition.interimResults = false;
+  //     recognition.maxAlternatives = 1;
 
-      recognition.onstart = () => {
-        setIsListening(true);
-      };
-      recognition.onend = () => {
-        setIsListening(false);
-      };
-      recognition.onresult = (event) => {
-        const transcript = event.results[0][0].transcript;
-        setMsg(transcript);
-      };
-      recognition.start();
-    }
-  };
+  //     recognition.onstart = () => {
+  //       setIsListening(true);
+  //     };
+  //     recognition.onend = () => {
+  //       setIsListening(false);
+  //     };
+  //     recognition.onresult = (event) => {
+  //       const transcript = event.results[0][0].transcript;
+  //       setMsg(transcript);
+  //     };
+  //     recognition.start();
+  //   }
+  // };
 
   return (
     <div className="flex items-center bg-[#242930] px-6 py-3 mx-8 mb-4 rounded-full">
@@ -49,7 +49,7 @@ export default function ChatInput({ handleSendMsg }) {
           onChange={(e) => setMsg(e.target.value)}
           className="flex-grow bg-transparent text-white outline-none py-1 placeholder-gray-400"
         />
-        <button
+        {/* <button
           className="ml-4 flex items-center justify-center"
           onClick={handleSpeechRecognition}
         >
@@ -64,7 +64,7 @@ export default function ChatInput({ handleSendMsg }) {
               size={24}
             />
           )}
-        </button>
+        </button> */}
         <button className="ml-4 flex items-center justify-center">
           <LuUpload className="text-white/70 hover:text-purple-500" size={22} />
         </button>

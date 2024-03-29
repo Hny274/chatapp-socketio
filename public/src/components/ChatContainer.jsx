@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from "react";
 import ChatInput from "./ChatInput";
 import axios from "axios";
 import { getAllMessagesRoute, sendMessageRoute } from "../utils/APIRoutes";
-import { v4 as uuidv4 } from "uuid";
 
 export default function ChatContainer({ currentChat, currentUser, socket }) {
   const [messages, setMessages] = useState([]);
@@ -28,27 +27,34 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
   }, [currentChat, currentUser]);
 
   const handleSendMsg = async (msg) => {
+    const timestamp = Date.now();
     await axios.post(sendMessageRoute, {
       from: currentUser._id,
       to: currentChat._id,
       message: msg,
+      timestamp: timestamp,
     });
     socket.current.emit("send-msg", {
       to: currentChat._id,
       from: currentUser._id,
       message: msg,
+      timestamp: timestamp,
     });
 
     setMessages((prevMessages) => [
       ...prevMessages,
-      { fromSelf: true, message: msg },
+      { fromSelf: true, message: msg, timestamp: timestamp },
     ]);
   };
 
   useEffect(() => {
     if (socket.current) {
-      socket.current.on("msg-receive", (msg) => {
-        setArrivalMessage({ fromSelf: false, message: msg });
+      socket.current.on("msg-receive", ({ message, timestamp }) => {
+        setArrivalMessage({
+          fromSelf: false,
+          message: message,
+          timestamp: timestamp,
+        });
       });
     }
   }, []);
@@ -65,14 +71,17 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
     <>
       {currentChat && (
         <div className="flex flex-col h-[88vh] w-[72%] bg-[#1b2028]">
-          <div className="px-8 flex flex-col gap-4 overflow-y-scroll h-full pb-2 bg-[#1b2028] my-4">
+          <div
+            className="px-8 flex flex-col gap-4 overflow-y-scroll h-full pb-2 bg-[#1b2028] my-4"
+            ref={scrollRef}
+          >
             {messages.map((msg, index) => (
               <div
-                key={uuidv4()}
+                key={index}
                 ref={scrollRef}
                 className={`${msg.fromSelf ? "justify-end" : "justify-start"}`}
               >
-                <div className="flex">
+                <div className="flex flex-col">
                   <div
                     className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
                       msg.fromSelf
@@ -82,6 +91,13 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
                   >
                     <p>{msg.message}</p>
                   </div>
+                  <p
+                    className={`${
+                      msg.fromSelf ? "ml-auto" : "mr-auto"
+                    } text-white/60 text-sm mt-1`}
+                  >
+                    {formatDate(msg.timestamp)}
+                  </p>
                 </div>
               </div>
             ))}
@@ -92,3 +108,23 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
     </>
   );
 }
+
+const formatDate = (date) => {
+  const parsedDate =
+    typeof date === "string" ? new Date(date) : new Date(parseInt(date));
+
+  if (isNaN(parsedDate.getTime())) {
+    return "Invalid Date";
+  }
+
+  const year = parsedDate.getFullYear();
+  const month = String(parsedDate.getMonth() + 1).padStart(2, "0");
+  const day = String(parsedDate.getDate()).padStart(2, "0");
+  const hours = String(parsedDate.getHours()).padStart(2, "0");
+  const minutes = String(parsedDate.getMinutes()).padStart(2, "0");
+  const seconds = String(parsedDate.getSeconds()).padStart(2, "0");
+
+  const formattedDate = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+  return formattedDate;
+};
