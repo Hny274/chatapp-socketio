@@ -1,148 +1,68 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import Picker from 'emoji-picker-react';
-import { IoMdSend } from 'react-icons/io';
-import { BsEmojiSmileFill } from 'react-icons/bs';
+import React, { useState } from "react";
+import { IoMdSend } from "react-icons/io";
+import { LuUpload } from "react-icons/lu";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
+import { Cloudinary } from "cloudinary-core";
 
-export default function ChatInput({handleSendMsg}) {
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [msg, setMsg] = useState('');
+export default function ChatInput({ handleSendMsg }) {
+  const [msg, setMsg] = useState("");
+  const cloudinary = new Cloudinary({ cloud_name: "db7j1qgnq" });
 
-  const handleEmojiPickerHideShow = () => {
-    setShowEmojiPicker(!showEmojiPicker);
-  };
-
-  const handleEmojiClick = (event, emoji) => {
-    let message = msg + emoji.emoji;
-    setMsg(message);
-  };
-
-  const sendChat=(event)=>{
-    event.preventDefault();
-    if(msg.length>0){
-        handleSendMsg(msg);
-        setMsg('')
+  const handleFileUpload = async (event) => {
+    if (!event.target.files[0]) {
+      alert("Please select a file.");
+      return;
     }
-  }
+    try {
+      const formData = new FormData();
+      formData.append("file", event.target.files[0]);
+      formData.append("upload_preset", "zhgsajor");
+      const response = await axios.post(
+        `https://api.cloudinary.com/v1_1/db7j1qgnq/image/upload`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      console.log("Upload success:", response.data);
+
+      const imageUrl = cloudinary.url(response.data.public_id);
+      handleSendMsg(imageUrl);
+    } catch (error) {
+      console.error("Upload error:", error);
+    }
+  };
+
+  const sendChat = (event) => {
+    event.preventDefault();
+    if (msg.length > 0) {
+      handleSendMsg(msg);
+      setMsg("");
+    }
+  };
 
   return (
-    <Container>
-      <div className='button-container'>
-        <div className='emoji'>
-          <BsEmojiSmileFill onClick={handleEmojiPickerHideShow} />
-          {showEmojiPicker && <Picker className='emojiPicker' onEmojiClick={handleEmojiClick} />}
-        </div>
-      </div>
-      <form className='input-container' onSubmit={(e)=>sendChat(e)}>
+    <div className="flex items-center bg-[#242930] px-6 py-3 mx-8 mb-4 rounded-full">
+      <form className="flex flex-grow" onSubmit={(e) => sendChat(e)}>
         <input
-          type='text'
-          placeholder='Type your message here'
+          type="text"
+          placeholder="Type your message here"
           value={msg}
           onChange={(e) => setMsg(e.target.value)}
+          className="flex-grow bg-transparent text-white outline-none py-1 placeholder-gray-400"
         />
-        <button className='submit'>
-          <IoMdSend />
+        <input type="file" id="file" onChange={handleFileUpload} hidden />
+        <label htmlFor="file" className="ml-4 flex items-center justify-center">
+          <LuUpload className="text-white/70 hover:text-purple-500" size={22} />
+        </label>
+        <button type="submit" className="ml-5 flex items-center justify-center">
+          <IoMdSend className="text-white/70 hover:text-purple-500" size={24} />
         </button>
       </form>
-    </Container>
+    </div>
   );
 }
-
-const Container = styled.div`
-  display: grid;
-  align-items: center;
-  grid-template-columns: 5% 95%;
-  background-color: #080420;
-  padding: 0 2rem;
-  @media screen and (min-width: 720px) and (max-width: 1080px) {
-    padding: 0 1rem;
-    gap: 1rem;
-  }
-  .button-container {
-    display: flex;
-    align-items: center;
-    color: white;
-    gap: 1rem;
-    .emoji {
-      position: relative;
-      svg {
-        font-size: 1.5rem;
-        color: #ffff00c8;
-        cursor: pointer;
-      }
-      emoji-picker-react {
-        position: absolute;
-        top: -1000px;
-        background-color: #080420;
-        box-shadow: 0 5px 10px #9a86f3;
-        border-color: #9a86f3;
-        z-index: 9999; 
-        max-height: 200px; 
-        overflow-y: auto;
-        left:0px;
-        .emoji-scroll-wrapper::-webkit-scrollbar {
-          background-color: #080420;
-          width: 5px;
-          &-thumb {
-            background-color: #9a86f3;
-          }
-        }
-        .emoji-categories {
-          button {
-            filter: contrast(0);
-          }
-        }
-        .emoji-search {
-          background-color: transparent;
-          border-color: #9a86f3;
-        }
-        .emoji-group:before {
-          background-color: #080420;
-        }
-      }
-    }
-  }
-  .input-container {
-    width: 100%;
-    border-radius: 2rem;
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    background-color: #ffffff34;
-    input {
-      width: 90%;
-      height: 60%;
-      background-color: transparent;
-      color: white;
-      border: none;
-      padding-left: 1rem;
-      font-size: 1.2rem;
-
-      &::selection {
-        background-color: #9a86f3;
-      }
-      &:focus {
-        outline: none;
-      }
-    }
-    button {
-      padding: 0.3rem 2rem;
-      border-radius: 2rem;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background-color: #9a86f3;
-      border: none;
-      @media screen and (min-width: 720px) and (max-width: 1080px) {
-        padding: 0.3rem 1rem;
-        svg {
-          font-size: 1rem;
-        }
-      }
-      svg {
-        font-size: 2rem;
-        color: white;
-      }
-    }
-  }
-`;

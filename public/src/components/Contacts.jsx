@@ -1,153 +1,53 @@
-import React, { useState, useEffect } from "react";
-import styled from "styled-components";
-import Logo from "../assets/logo1.png";
+import React, { useState } from "react";
+import Logout from "./Logout";
 
-export default function Contacts({ contacts, currentUser, changeChat}) {
-    const [currentUserName,setCurrentUserName]=useState(undefined);
-    const [currentUserImage,setCurrentUserImage]=useState(undefined);
-    const [currentSelected,setCurrentSelected]=useState(undefined);
-    useEffect(()=>{
-        //console.log(contacts);
-        if(currentUser){
-            setCurrentUserImage(currentUser.avatarImage);
-            setCurrentUserName(currentUser.username);
-        }
-    },[currentUser]);
+export default function Contacts({ contacts, currentUser, changeChat }) {
+  const [currentSelected, setCurrentSelected] = useState(undefined);
 
-    const changeCurrentChat=(index,contacts)=>{
-        setCurrentSelected(index);
-        changeChat(contacts);
-    };
-  return <>
-  {
-    currentUserImage && currentUserName && (
-        <Container>
-            <div className="brand">
-                <img src={Logo} alt="logo"/>
-                <h3>ChatApp</h3>
-            </div>
-            <div className="contacts">
-                {
-                    contacts.map((contact,index)=>{
-                        return (
-                            <div className={`contact ${index===currentSelected ? "selected" : ""}`}
-                             key={index}
-                             onClick={()=>changeCurrentChat(index,contact)}
-                             >
-                                <div className="avatar">
-                                <img
-                                    src={`data:image/svg+xml;base64,${contact.avatarImage}`}
-                                    alt="avatar"
-                                />
-                                </div>
-                                <div className="username">
-                                    <h3>{contact.username}</h3>
-                                </div> 
-                             </div>
-                        );
-                    }) }
-            </div>
-            <div className="current-user">
-                <div className="avatar">
-                    <img
-                        src={`data:image/svg+xml;base64,${currentUserImage}`}
-                        alt="avatar"
-                    />
+  const changeCurrentChat = (index, contacts) => {
+    setCurrentSelected(index);
+    changeChat(contacts);
+  };
+
+  return (
+    <>
+      {currentUser && currentUser.avatarImage && currentUser.username && (
+        <div className="flex flex-col h-[88vh] w-[28%] bg-[#242930] border-r border-r-[#75767780]">
+          <div className="flex flex-col w-full items-center overflow-auto gap-2 flex-grow pt-3">
+            {contacts.map((contact, index) => (
+              <div
+                key={index}
+                className={`flex items-center gap-4 cursor-pointer w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
+                  index === currentSelected ? "bg-purple-600" : ""
+                }`}
+                onClick={() => changeCurrentChat(index, contact)}
+              >
+                <div>
+                  <img
+                    src={`${contact.avatarImage}`}
+                    alt="avatar"
+                    className="h-10"
+                  />
                 </div>
-                <div className="username">
-                    <h2>{currentUserName}</h2>
-                </div>
+                <p className="text-white text-lg">{contact.username}</p>
+              </div>
+            ))}
+          </div>
+          <div className="flex items-center justify-center bg-[#1b2028] m-2 rounded-2xl p-4">
+            <img
+              src={`${currentUser.avatarImage}`}
+              alt="avatar"
+              className="h-12 mr-3"
+            />
+            <div className="flex justify-between items-center w-full">
+              <h2 className="text-white text-xl font-semibold">
+                {currentUser.username}
+              </h2>
+              <Logout />
             </div>
-        </Container>
-    )
-  }
-  </>;
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
-
-const Container=styled.div`
-    display:grid;
-    grid-template-rows:10% 75% 15%;
-    overflow:hidden;
-    background-color:#080420;
-    .brand {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        justify-content: center;
-        img {
-            height: 2rem;
-        }
-        h3 {
-          color: white;
-        }
-    }
-
-    .contacts {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        overflow: auto;
-        gap: 0.8rem;
-        &::-webkit-scrollbar {
-          width: 0.2rem;
-          &-thumb {
-            background-color: #ffffff39;
-            width: 0.1rem;
-            border-radius: 1rem;
-          }
-        }
-    
-    .contact {
-        background-color: #ffffff34;
-        min-height: 5rem;
-        cursor: pointer;
-        width: 90%;
-        border-radius: 0.2rem;
-        padding: 0.4rem;
-        display: flex;
-        gap: 1rem;
-        align-items: center;
-        transition: 0.5s ease-in-out;
-        .avatar {
-            img {
-                height: 3rem;
-            }
-        }
-        .username {
-            h3 {
-              color: white;
-            }
-          }
-        }
-        .selected {
-          background-color: #9a86f3;
-        }
-    }
-
-    .current-user {
-        background-color: #0d0d30;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 2rem;
-        .avatar {
-          img {
-            height: 4rem;
-            max-inline-size: 100%;
-          }
-        }
-        .username {
-          h2 {
-            color: white;
-          }
-        }
-        @media screen and (min-width: 720px) and (max-width: 1080px) {
-            gap: 0.5rem;
-            .username {
-              h2 {
-                font-size: 1rem;
-              }
-            }
-        }
-    }
-`;
