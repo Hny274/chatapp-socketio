@@ -56,7 +56,16 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("send-msg-grp", ({ groupId, message, sender, timestamp }) => {
-    io.emit("msg-receive-grp", { groupId, message, sender, timestamp });
+  socket.on("send-msg-grp", ({ groupId, message, sender, createdAt }) => {
+    io.sockets.sockets.forEach((connectedSocket) => {
+      if (connectedSocket.id !== socket.id) {
+        connectedSocket.emit("msg-receive-grp", {
+          groupId,
+          message,
+          sender,
+          createdAt,
+        });
+      }
+    });
   });
 });

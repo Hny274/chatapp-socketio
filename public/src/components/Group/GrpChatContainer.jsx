@@ -34,12 +34,13 @@ export default function GrpChatContainer({
     if (socket.current) {
       socket.current.on(
         "msg-receive-grp",
-        ({ groupId, message, sender, timestamp }) => {
+        ({ groupId, message, sender, createdAt }) => {
+          console.log({ groupId, message, sender, createdAt });
           setArrivalMessage({
             groupId: groupId,
             sender: sender,
             message: message,
-            timestamp: timestamp,
+            createdAt: createdAt,
           });
         }
       );
@@ -69,34 +70,42 @@ export default function GrpChatContainer({
         ...prevData,
         messages: [...(prevData.messages || []), arrivalMessage],
       }));
+    console.log(grpData);
   }, [arrivalMessage]);
 
   const handleSendMsg = async (msg) => {
     const timestamp = Date.now();
-    await axios.post(sendGroupMessageRoute, {
-      groupId: currentGroupChat._id,
-      message: msg,
-      sender: currentUser._id,
-    });
+    try {
+      await axios.post(sendGroupMessageRoute, {
+        groupId: currentGroupChat._id,
+        message: msg,
+        sender: currentUser._id,
+      });
 
-    socket.current.emit("send-msg-grp", {
-      groupId: currentGroupChat._id,
-      message: msg,
-      sender: currentUser._id,
-      createdAt: timestamp,
-    });
-
-    setGrpData((prevData) => ({
-      ...prevData,
-      messages: [
-        ...(prevData.messages || []),
-        {
-          message: msg,
-          sender: currentUser,
-          createdAt: timestamp,
+      socket.current.emit("send-msg-grp", {
+        groupId: currentGroupChat._id,
+        message: msg,
+        sender: {
+          _id: currentUser._id,
+          username: currentUser.username,
         },
-      ],
-    }));
+        createdAt: timestamp,
+      });
+
+      setGrpData((prevData) => ({
+        ...prevData,
+        messages: [
+          ...(prevData.messages || []),
+          {
+            message: msg,
+            sender: currentUser,
+            createdAt: timestamp,
+          },
+        ],
+      }));
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
 
   return (
@@ -139,7 +148,7 @@ export default function GrpChatContainer({
                 ) : null}
                 <div
                   className={`${
-                    msg.sender._id === currentUser._id
+                    msg.sender?._id === currentUser._id
                       ? "justify-end"
                       : "justify-start"
                   }`}
@@ -148,14 +157,14 @@ export default function GrpChatContainer({
                     {!msg.message?.includes("cloudinary") ? (
                       <div
                         className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
-                          msg.sender._id === currentUser._id
+                          msg.sender?._id === currentUser._id
                             ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
                             : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
                         }`}
                       >
                         <p
                           className={`text-white/60 text-sm tracking-wider ${
-                            msg.sender._id === currentUser._id && "ml-auto"
+                            msg.sender?._id === currentUser._id && "ml-auto"
                           }`}
                         >
                           {msg.sender.username}
@@ -170,7 +179,7 @@ export default function GrpChatContainer({
                         }}
                         src={msg.message}
                         className={`max-w-[40%] ${
-                          msg.fromSelf
+                          msg.sender?._id === currentUser._id
                             ? "ml-auto rounded-l-xl rounded-t-xl text-white border-4 border-[#373b41]"
                             : "border-purple-600 border-4 rounded-r-xl rounded-t-xl text-gray-100"
                         }`}
@@ -179,7 +188,7 @@ export default function GrpChatContainer({
                     )}
                     <p
                       className={`text-white/60 text-sm mt-1 tracking-wider ${
-                        msg.sender._id === currentUser._id && "ml-auto"
+                        msg.sender?._id === currentUser._id && "ml-auto"
                       }`}
                     >
                       {formatDate(msg.createdAt)}
