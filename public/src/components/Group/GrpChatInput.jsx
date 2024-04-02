@@ -4,7 +4,7 @@ import { LuLoader2, LuUpload } from "react-icons/lu";
 import axios from "axios";
 import { Cloudinary } from "cloudinary-core";
 
-export default function ChatInput({ handleSendMsg }) {
+export default function GrpChatInput({ handleSendMsg }) {
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
   const cloudinary = new Cloudinary({ cloud_name: "db7j1qgnq" });

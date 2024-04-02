@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messagesRoute");
+const groupRoutes = require("./routes/groupRoute");
 const socket = require("socket.io");
 const app = express();
 require("dotenv").config();
@@ -12,6 +13,7 @@ app.use(express.json());
 
 app.use("/api/v1/auth", userRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/group", groupRoutes);
 
 mongoose
   .connect(process.env.MONGO_URL, {
@@ -32,15 +34,13 @@ const server = app.listen(process.env.PORT, () => {
 const io = socket(server, {
   cors: {
     origin: "http://localhost:3000",
-    Credential: true,
+    credentials: true,
   },
 });
 
-global.onlineUsers = new Map();
+const onlineUsers = new Map();
 
 io.on("connection", (socket) => {
-  global.chatSocket = socket;
-
   socket.on("add-user", (userId) => {
     onlineUsers.set(userId, socket.id);
   });
@@ -54,5 +54,9 @@ io.on("connection", (socket) => {
       };
       socket.to(sendUserSocket).emit("msg-receive", messageWithTimestamp);
     }
+  });
+
+  socket.on("send-msg-grp", ({ groupId, message, sender, timestamp }) => {
+    io.emit("msg-receive-grp", { groupId, message, sender, timestamp });
   });
 });

@@ -1,10 +1,15 @@
+const { encryptMessage, decryptMessage } = require("../encryptDecrypt");
 const messageModel = require("../model/messageModel");
+const CryptoJS = require("crypto-js");
 
 module.exports.addMsg = async (req, res, next) => {
   try {
     const { from, to, message } = req.body;
+
+    const encryptedMessage = encryptMessage(message, process.env.ENCRYPTKEY);
+
     const data = await messageModel.create({
-      message: { text: message },
+      message: { text: encryptedMessage },
       users: [from, to],
       sender: from,
     });
@@ -26,9 +31,10 @@ module.exports.getAllMsg = async (req, res, next) => {
       })
       .sort({ updatedAt: 1 });
     const projectedMessages = messages.map((msg) => {
+      const decryptedMessage = decryptMessage(msg.message.text, process.env.ENCRYPTKEY);
       return {
         fromSelf: msg.sender.toString() === from,
-        message: msg.message.text,
+        message: decryptedMessage,
         timestamp: msg.createdAt,
       };
     });

@@ -1,77 +1,57 @@
 import React, { useState, useEffect, useRef } from "react";
-import ChatInput from "./ChatInput";
+import ChatInput from "./GrpChatInput";
 import axios from "axios";
-import { getAllMessagesRoute, sendMessageRoute } from "../utils/APIRoutes";
+import { getGroupData, sendGroupMessageRoute } from "../../utils/APIRoutes";
 import { IoMdClose } from "react-icons/io";
 
-export default function ChatContainer({ currentChat, currentUser, socket }) {
-  const [messages, setMessages] = useState([]);
+export default function GrpChatContainer({
+  socket,
+  currentGroupChat,
+  currentUser,
+}) {
+  const [grpData, setGrpData] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const scrollRef = useRef();
   const [viewImage, setViewImage] = useState(false);
   const [image, setImage] = useState();
 
   useEffect(() => {
-    const fetchMessages = async () => {
+    const fetchGroupData = async () => {
       try {
-        if (currentUser && currentUser._id && currentChat) {
-          const response = await axios.post(getAllMessagesRoute, {
-            from: currentUser._id,
-            to: currentChat._id,
-          });
-          setMessages(response.data);
-        }
+        const response = await axios.get(
+          `${getGroupData}/getGroup/${currentGroupChat._id}`
+        );
+        setGrpData(response.data);
       } catch (error) {
         console.error("Error fetching messages:", error);
       }
     };
 
-    fetchMessages();
-  }, [currentChat, currentUser]);
-
-  const handleSendMsg = async (msg) => {
-    const timestamp = Date.now();
-    await axios.post(sendMessageRoute, {
-      from: currentUser._id,
-      to: currentChat._id,
-      message: msg,
-      timestamp: timestamp,
-    });
-    socket.current.emit("send-msg", {
-      to: currentChat._id,
-      from: currentUser._id,
-      message: msg,
-      timestamp: timestamp,
-    });
-
-    setMessages((prevMessages) => [
-      ...prevMessages,
-      { fromSelf: true, message: msg, timestamp: timestamp },
-    ]);
-  };
+    fetchGroupData();
+  }, [currentGroupChat]);
 
   useEffect(() => {
     if (socket.current) {
-      socket.current.on("msg-receive", ({ message, timestamp }) => {
-        setArrivalMessage({
-          fromSelf: false,
-          message: message,
-          timestamp: timestamp,
-        });
-      });
+      socket.current.on(
+        "msg-receive-grp",
+        ({ groupId, message, sender, timestamp }) => {
+          setArrivalMessage({
+            groupId: groupId,
+            sender: sender,
+            message: message,
+            timestamp: timestamp,
+          });
+        }
+      );
     }
-  }, []);
-
-  useEffect(() => {
-    arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
-  }, [arrivalMessage]);
+  }, [socket]);
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  }, [messages, scrollRef.current]);
+  }, [scrollRef.current, grpData]);
 
   const formatDateForDisplay = (timestamp) => {
     const date = new Date(timestamp);
@@ -81,6 +61,42 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
       month: "long",
       day: "numeric",
     });
+  };
+
+  useEffect(() => {
+    arrivalMessage &&
+      setGrpData((prevData) => ({
+        ...prevData,
+        messages: [...(prevData.messages || []), arrivalMessage],
+      }));
+  }, [arrivalMessage]);
+
+  const handleSendMsg = async (msg) => {
+    const timestamp = Date.now();
+    await axios.post(sendGroupMessageRoute, {
+      groupId: currentGroupChat._id,
+      message: msg,
+      sender: currentUser._id,
+    });
+
+    socket.current.emit("send-msg-grp", {
+      groupId: currentGroupChat._id,
+      message: msg,
+      sender: currentUser._id,
+      createdAt: timestamp,
+    });
+
+    setGrpData((prevData) => ({
+      ...prevData,
+      messages: [
+        ...(prevData.messages || []),
+        {
+          message: msg,
+          sender: currentUser,
+          createdAt: timestamp,
+        },
+      ],
+    }));
   };
 
   return (
@@ -101,37 +117,49 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
           </div>
         </div>
       )}
-      {currentChat && (
-        <div className="flex flex-col h-[88vh] w-[72%] bg-[#1b2028]">
-          <div
-            className="px-8 flex flex-col gap-4 overflow-y-scroll h-full pb-2 bg-[#1b2028] my-4"
-            ref={scrollRef}
-          >
-            {messages.map((msg, index) => (
+
+      <div className="flex flex-col h-[88vh] w-[72%] bg-[#1b2028]">
+        <div
+          className="px-8 flex flex-col gap-4 overflow-y-scroll h-full pb-2 bg-[#1b2028] my-4"
+          ref={scrollRef}
+        >
+          {grpData &&
+            grpData?.messages?.map((msg, index) => (
               <React.Fragment key={index}>
                 {index === 0 ||
-                formatDateForDisplay(msg.timestamp) !==
-                  formatDateForDisplay(messages[index - 1].timestamp) ? (
+                formatDateForDisplay(msg.createdAt) !==
+                  formatDateForDisplay(
+                    grpData.messages[index - 1].createdAt
+                  ) ? (
                   <div className="flex justify-center mb-2">
                     <div className="bg-gray-500 px-2 py-1 rounded-md text-xs">
-                      {formatDateForDisplay(msg.timestamp)}
+                      {formatDateForDisplay(msg.createdAt)}
                     </div>
                   </div>
                 ) : null}
                 <div
                   className={`${
-                    msg.fromSelf ? "justify-end" : "justify-start"
+                    msg.sender._id === currentUser._id
+                      ? "justify-end"
+                      : "justify-start"
                   }`}
                 >
                   <div className="flex flex-col items-start justify-end">
                     {!msg.message?.includes("cloudinary") ? (
                       <div
                         className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
-                          msg.fromSelf
+                          msg.sender._id === currentUser._id
                             ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
                             : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
                         }`}
                       >
+                        <p
+                          className={`text-white/60 text-sm tracking-wider ${
+                            msg.sender._id === currentUser._id && "ml-auto"
+                          }`}
+                        >
+                          {msg.sender.username}
+                        </p>
                         <p>{msg.message}</p>
                       </div>
                     ) : (
@@ -151,19 +179,18 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
                     )}
                     <p
                       className={`text-white/60 text-sm mt-1 tracking-wider ${
-                        msg.fromSelf && "ml-auto"
+                        msg.sender._id === currentUser._id && "ml-auto"
                       }`}
                     >
-                      {formatDate(msg.timestamp)}
+                      {formatDate(msg.createdAt)}
                     </p>
                   </div>
                 </div>
               </React.Fragment>
             ))}
-          </div>
-          <ChatInput handleSendMsg={handleSendMsg} />
         </div>
-      )}
+        <ChatInput handleSendMsg={handleSendMsg} />
+      </div>
     </>
   );
 }

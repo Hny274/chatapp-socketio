@@ -8,3 +8,7 @@ export const logoutRoute = `${host}/api/v1/auth/logout`;
 export const sendMessageRoute = `${host}/api/v1/messages/addmsg`;
 export const getAllMessagesRoute = `${host}/api/v1/messages/getmsg`;
 export const getSearchUser = `${host}/api/v1/auth/searchUser`;
+export const addFriendRoute = `${host}/api/v1/auth/`;
+
+export const getGroupData = `${host}/api/v1/group`;
+export const sendGroupMessageRoute = `${host}/api/v1/group/addMessage`;

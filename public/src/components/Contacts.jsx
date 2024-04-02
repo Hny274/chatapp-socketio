@@ -1,89 +1,77 @@
 import React, { useState } from "react";
 import Logout from "./Logout";
-import { BiSearch } from "react-icons/bi";
-import axios from "axios";
-import { getSearchUser } from "../utils/APIRoutes";
+import { useNavigate } from "react-router-dom";
+import FriendList from "./FriendList";
+import GroupList from "./GroupList";
 
-export default function Contacts({ contacts, currentUser, changeChat }) {
-  const [currentSelected, setCurrentSelected] = useState(undefined);
-  const [searchResult, setSearchResult] = useState();
-  const [search, setSearch] = useState();
-  const changeCurrentChat = (index, contacts) => {
-    setCurrentSelected(index);
-    changeChat(contacts);
-  };
-
-  const searchUserHandler = async () => {
-    try {
-      const resp = await axios(`${getSearchUser}?q=${search}`);
-      setSearchResult(resp.data.user);
-    } catch (error) {}
-  };
+export default function Contacts({
+  contacts,
+  currentUser,
+  changeChat,
+  setContacts,
+  setGroup,
+  setCurrentGroupChat,
+  currentGroupChat,
+}) {
+  const navigate = useNavigate();
+  const [tab, setTab] = useState(1);
 
   return (
     <>
       {currentUser && currentUser.avatarImage && currentUser.username && (
         <div className="flex flex-col h-[88vh] w-[28%] bg-[#242930] border-r border-r-[#75767780]">
-          <div className="mt-3 mx-auto flex justify-center items-center w-[95%] rounded-full bg-[#1b2028] border-[#75767780]">
-            <input
-              type="text"
-              className="px-4 py-2 text-white bg-transparent w-full rounded-full outline-none"
-              placeholder="Enter Friend Username..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <BiSearch
-              className="mr-4 text-2xl text-white/80"
-              onClick={searchUserHandler}
-            />
+          <div className="flex justify-evenly items-center w-[95%] mx-auto mt-3 gap-4">
+            <button
+              className={`w-full p-2 rounded-2xl ${
+                tab === 1
+                  ? "text-[#fff] bg-[#1b2028] "
+                  : "text-[#757677] hover:bg-[#1b202880]"
+              }`}
+              onClick={() => {
+                setTab(1);
+                setGroup(false);
+              }}
+            >
+              All Chats
+            </button>
+            <button
+              className={`w-full p-2 rounded-2xl ${
+                tab === 2
+                  ? "text-[#fff] bg-[#1b2028] "
+                  : "text-[#757677] hover:bg-[#1b202880]"
+              }`}
+              onClick={() => {
+                setTab(2);
+                setGroup(true);
+              }}
+            >
+              Groups
+            </button>
           </div>
-          {search && searchResult && (
-            <div className="flex flex-col w-full items-center overflow-auto gap-2 pt-4 border-b">
-              {searchResult.map((contact, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-4 cursor-pointer w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
-                    index === currentSelected ? "bg-purple-600" : ""
-                  }`}
-                  onClick={() => changeCurrentChat(index, contact)}
-                >
-                  <div>
-                    <img
-                      src={`${contact.avatarImage}`}
-                      alt="avatar"
-                      className="h-10"
-                    />
-                  </div>
-                  <p className="text-white text-lg">{contact.username}</p>
-                </div>
-              ))}
-            </div>
+          {tab === 1 && (
+            <FriendList
+              contacts={contacts}
+              currentUser={currentUser}
+              changeChat={changeChat}
+              setContacts={setContacts}
+            />
           )}
-          <div className="flex flex-col w-full items-center overflow-auto gap-2 flex-grow pt-4">
-            {contacts.map((contact, index) => (
-              <div
-                key={index}
-                className={`flex items-center gap-4 cursor-pointer w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
-                  index === currentSelected ? "bg-purple-600" : ""
-                }`}
-                onClick={() => changeCurrentChat(index, contact)}
-              >
-                <div>
-                  <img
-                    src={`${contact.avatarImage}`}
-                    alt="avatar"
-                    className="h-10"
-                  />
-                </div>
-                <p className="text-white text-lg">{contact.username}</p>
-              </div>
-            ))}
-          </div>
+          {tab === 2 && (
+            <GroupList
+              contacts={contacts}
+              currentUser={currentUser}
+              changeChat={changeChat}
+              setContacts={setContacts}
+              setCurrentGroupChat={setCurrentGroupChat}
+              currentGroupChat={currentGroupChat}
+            />
+          )}
           <div className="flex items-center justify-center bg-[#1b2028] m-2 rounded-2xl p-4">
             <img
               src={`${currentUser.avatarImage}`}
               alt="avatar"
               className="h-12 mr-3"
+              onClick={() => navigate("/setAvatar")}
             />
             <div className="flex justify-between items-center w-full">
               <h2 className="text-white text-xl font-semibold">
