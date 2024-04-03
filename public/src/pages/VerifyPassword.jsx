@@ -49,7 +49,7 @@ function VerifyPassword() {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4 w-full">
             <div className="flex items-center justify-center mb-3">
               <IoIosChatboxes className="text-purple-500" size={60} />
-              <p className="text-4xl w-full ml-4 font-semibold">ChatApp</p>
+              <p className="text-4xl w-full ml-4 font-semibold">Chatify+</p>
             </div>
             <div>
               <label

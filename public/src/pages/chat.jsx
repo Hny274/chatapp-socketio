@@ -91,7 +91,7 @@ export default function Chat() {
       <div className="w-full flex justify-between items-center h-[12vh]">
         <div className="flex items-center justify-center bg-[#1b2028] w-[28%] h-full border-b border-r border-b-[#75767780] border-r-[#75767780]">
           <IoIosChatboxes className="text-purple-500 ml-4" size={40} />
-          <h1 className="text-white text-2xl w-full ml-3">ChatApp</h1>
+          <h1 className="text-white text-2xl w-full ml-3">Chatify+</h1>
         </div>
         {!group && currentChat && (
           <ChatHeader
