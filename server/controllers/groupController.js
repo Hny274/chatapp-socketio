@@ -17,11 +17,27 @@ exports.getGroup = async (req, res) => {
     }
 };
 
+exports.searchGroup = async (req, res) => {
+    try {
+        const group = await Group.find({ name: req.query.q }).populate("users admin").populate({
+            path: "messages",
+            populate: {
+                path: "sender",
+            },
+        });
+        res.status(200).json(group);
+    } catch (err) {
+        console.log(err)
+        res.status(400).json({ message: err.message });
+    }
+};
+
+
 
 exports.createGroup = async (req, res) => {
     try {
-        const { name, admin } = req.body;
-        const group = new Group({ name, admin, users: [admin] });
+        const { name, admin, avatar } = req.body;
+        const group = new Group({ name, admin, users: [admin], avatar });
         await group.save();
         await User.findByIdAndUpdate(admin, { $push: { group: group._id } });
         res.status(201).json(group);
@@ -61,12 +77,30 @@ exports.removeMemberFromGroup = async (req, res) => {
     try {
         const groupId = req.params.groupId;
         const userId = req.params.userId;
+
         const group = await Group.findById(groupId);
         if (!group) {
             return res.status(404).json({ message: "Group not found" });
         }
-        group.users = group.users.filter((id) => id.toString() !== userId);
+
+        const userIndex = group.users.indexOf(userId);
+        if (userIndex !== -1) {
+            group.users.splice(userIndex, 1);
+        }
+
         await group.save();
+
+        const user = await User.findById(userId);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        const groupIndex = user.group.indexOf(groupId);
+        if (groupIndex !== -1) {
+            user.group.splice(groupIndex, 1);
+        }
+
+        await user.save();
+
         res.status(200).json(group);
     } catch (err) {
         res.status(400).json({ message: err.message });

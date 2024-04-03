@@ -3,8 +3,8 @@ import axios from "axios";
 import { Buffer } from "buffer";
 import loader from "../assets/loader.webp";
 import { useNavigate } from "react-router-dom";
-import { setAvatarRoute } from "../utils/APIRoutes";
 import toast from "react-hot-toast";
+import { BACKEND_LINK } from "../utils/baseApi";
 export default function SetAvatar() {
   const api = `https://api.multiavatar.com/4645646`;
   const navigate = useNavigate();
@@ -28,9 +28,12 @@ export default function SetAvatar() {
 
       const user = JSON.parse(localStorage.getItem("chat-app-user"));
 
-      const { data } = await axios.post(`${setAvatarRoute}/${user._id}`, {
-        image: avatars[selectedAvatar],
-      });
+      const { data } = await axios.post(
+        `${BACKEND_LINK}/auth/setAvatar/${user._id}`,
+        {
+          image: avatars[selectedAvatar],
+        }
+      );
 
       if (data.isSet) {
         user.isAvatarImageSet = true;

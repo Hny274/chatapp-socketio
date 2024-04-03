@@ -1,16 +1,29 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { addFriendRoute, getSearchUser } from "../utils/APIRoutes";
+import React, { useEffect, useState } from "react";
 import { LuX } from "react-icons/lu";
 import { BiSearch } from "react-icons/bi";
 import toast from "react-hot-toast";
 import { IoPersonAddOutline } from "react-icons/io5";
+import { BACKEND_LINK } from "../utils/baseApi";
 
-const FriendList = ({ contacts, currentUser, changeChat, setContacts }) => {
+const FriendList = ({
+  contacts,
+  currentUser,
+  changeChat,
+  setContacts,
+  socket,
+}) => {
   const [searchResult, setSearchResult] = useState();
   const [search, setSearch] = useState("");
   const [searchActive, setSearchActive] = useState(false);
   const [currentSelected, setCurrentSelected] = useState(undefined);
+  const [activeUsers, setActiveUsers] = useState([]);
+
+  useEffect(() => {
+    socket?.current?.on("active-user-list", (activeUsers) => {
+      setActiveUsers(activeUsers);
+    });
+  }, [socket]);
 
   const changeCurrentChat = (index, contacts) => {
     setCurrentSelected(index);
@@ -20,7 +33,7 @@ const FriendList = ({ contacts, currentUser, changeChat, setContacts }) => {
   const searchUserHandler = async (e) => {
     e.preventDefault();
     try {
-      const resp = await axios(`${getSearchUser}?q=${search}`);
+      const resp = await axios(`${BACKEND_LINK}/auth/searchUser?q=${search}`);
       const searchData = resp.data.user;
       const updatedData = searchData.filter((user) => {
         return !contacts.some((contact) => contact.username === user.username);
@@ -35,15 +48,18 @@ const FriendList = ({ contacts, currentUser, changeChat, setContacts }) => {
   const addFriendHandler = async (friend) => {
     try {
       const resp = await axios.post(
-        `${addFriendRoute}${currentUser._id}/add-friend/${friend._id}`
+        `${BACKEND_LINK}/auth/${currentUser._id}/add-friend/${friend._id}`
       );
       toast.success(resp.data.message);
       setContacts((prevContacts) => [...prevContacts, friend]);
       setSearch("");
       setSearchResult();
       setSearchActive(false);
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error while adding friend:", error);
+    }
   };
+
   return (
     <>
       <form
@@ -101,7 +117,7 @@ const FriendList = ({ contacts, currentUser, changeChat, setContacts }) => {
           {contacts.map((contact, index) => (
             <div
               key={index}
-              className={`flex items-center gap-4 cursor-pointer w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
+              className={`flex items-center gap-4 cursor-pointer relative w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
                 index === currentSelected ? "bg-purple-600" : ""
               }`}
               onClick={() => changeCurrentChat(index, contact)}
@@ -114,6 +130,9 @@ const FriendList = ({ contacts, currentUser, changeChat, setContacts }) => {
                 />
               </div>
               <p className="text-white text-lg">{contact.username}</p>
+              {activeUsers.includes(contact._id) && (
+                <div className="bg-green-500 h-3 w-3 absolute top-2 right-2 rounded-full shadow shadow-green-400/20 "></div>
+              )}
             </div>
           ))}
         </div>

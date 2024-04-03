@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import ChatInput from "./ChatInput";
 import axios from "axios";
-import { getAllMessagesRoute, sendMessageRoute } from "../utils/APIRoutes";
 import { IoMdClose } from "react-icons/io";
+import { BACKEND_LINK } from "../utils/baseApi";
 
 export default function ChatContainer({ currentChat, currentUser, socket }) {
   const [messages, setMessages] = useState([]);
@@ -14,8 +14,8 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
   useEffect(() => {
     const fetchMessages = async () => {
       try {
-        if (currentUser && currentUser._id && currentChat) {
-          const response = await axios.post(getAllMessagesRoute, {
+        if (currentUser?._id && currentChat) {
+          const response = await axios.post(`${BACKEND_LINK}/messages/getmsg`, {
             from: currentUser._id,
             to: currentChat._id,
           });
@@ -31,7 +31,7 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
 
   const handleSendMsg = async (msg) => {
     const timestamp = Date.now();
-    await axios.post(sendMessageRoute, {
+    await axios.post(`${BACKEND_LINK}/messages/addmsg`, {
       from: currentUser._id,
       to: currentChat._id,
       message: msg,
@@ -60,18 +60,16 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
         });
       });
     }
-  }, []);
 
-  useEffect(() => {
     arrivalMessage && setMessages((prev) => [...prev, arrivalMessage]);
-  }, [arrivalMessage]);
+  }, [arrivalMessage, currentChat, currentUser, socket]);
 
   useEffect(() => {
     const scrollContainer = scrollRef.current;
     if (scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  }, [messages, scrollRef.current]);
+  }, [messages]);
 
   const formatDateForDisplay = (timestamp) => {
     const date = new Date(timestamp);
@@ -83,17 +81,22 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
     });
   };
 
+  const handleImageClick = (imageUrl) => {
+    setImage(imageUrl);
+    setViewImage(true);
+  };
+
   return (
     <>
       {viewImage && (
-        <div className="h-[100vh] w-full bg-black/40 backdrop-blur-sm absolute top-0 z-30 flex justify-center items-center">
-          <div className="w-[50%] flex justify-end items-end flex-col">
+        <div className="fixed inset-0 z-30 flex justify-center items-center bg-black bg-opacity-40">
+          <div className="w-[50%] flex flex-col justify-center items-center">
             <button
               onClick={() => {
                 setImage();
                 setViewImage(false);
               }}
-              className="bg-purple-600 text-white p-3 mb-3 rounded-full relative"
+              className="absolute top-4 right-4 bg-purple-600 text-white p-3 rounded-full"
             >
               <IoMdClose />
             </button>
@@ -136,10 +139,7 @@ export default function ChatContainer({ currentChat, currentUser, socket }) {
                       </div>
                     ) : (
                       <img
-                        onClick={() => {
-                          setImage(msg.message);
-                          setViewImage(true);
-                        }}
+                        onClick={() => handleImageClick(msg.message)}
                         src={msg.message}
                         className={`max-w-[40%] ${
                           msg.fromSelf

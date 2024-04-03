@@ -7,7 +7,9 @@ import { Cloudinary } from "cloudinary-core";
 export default function ChatInput({ handleSendMsg }) {
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
-  const cloudinary = new Cloudinary({ cloud_name: "db7j1qgnq" });
+  const cloudinary = new Cloudinary({
+    cloud_name: process.env.REACT_APP_CLOUD_NAME,
+  });
 
   const handleFileUpload = async (event) => {
     setUploading(true);
@@ -18,9 +20,9 @@ export default function ChatInput({ handleSendMsg }) {
     try {
       const formData = new FormData();
       formData.append("file", event.target.files[0]);
-      formData.append("upload_preset", "zhgsajor");
+      formData.append("upload_preset", process.env.REACT_APP_UPLOAD_PRESET);
       const response = await axios.post(
-        `https://api.cloudinary.com/v1_1/db7j1qgnq/image/upload`,
+        `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUD_NAME}/image/upload`,
         formData,
         {
           headers: {
@@ -28,9 +30,6 @@ export default function ChatInput({ handleSendMsg }) {
           },
         }
       );
-
-      console.log("Upload success:", response.data);
-
       const imageUrl = cloudinary.url(response.data.public_id);
       handleSendMsg(imageUrl);
       setUploading(false);

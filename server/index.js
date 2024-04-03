@@ -1,12 +1,13 @@
 const express = require("express");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const socket = require("socket.io");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messagesRoute");
 const groupRoutes = require("./routes/groupRoute");
-const socket = require("socket.io");
-const app = express();
 require("dotenv").config();
+
+const app = express();
 
 app.use(cors());
 app.use(express.json());
@@ -40,9 +41,25 @@ const io = socket(server, {
 
 const onlineUsers = new Map();
 
+const emitActiveUserList = () => {
+  const activeUsers = Array.from(onlineUsers.keys());
+  io.emit("active-user-list", activeUsers);
+};
+
 io.on("connection", (socket) => {
+
   socket.on("add-user", (userId) => {
     onlineUsers.set(userId, socket.id);
+    emitActiveUserList();
+  });
+
+  socket.on("disconnect", () => {
+    onlineUsers.forEach((value, key) => {
+      if (value === socket.id) {
+        onlineUsers.delete(key);
+        emitActiveUserList();
+      }
+    });
   });
 
   socket.on("send-msg", (data) => {
@@ -52,20 +69,16 @@ io.on("connection", (socket) => {
         message: data.message,
         timestamp: Date.now(),
       };
-      socket.to(sendUserSocket).emit("msg-receive", messageWithTimestamp);
+      io.to(sendUserSocket).emit("msg-receive", messageWithTimestamp);
     }
   });
 
   socket.on("send-msg-grp", ({ groupId, message, sender, createdAt }) => {
-    io.sockets.sockets.forEach((connectedSocket) => {
-      if (connectedSocket.id !== socket.id) {
-        connectedSocket.emit("msg-receive-grp", {
-          groupId,
-          message,
-          sender,
-          createdAt,
-        });
-      }
+    socket.broadcast.emit("msg-receive-grp", {
+      groupId,
+      message,
+      sender,
+      createdAt,
     });
   });
 });

@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { loginRoute } from "../utils/APIRoutes";
 import { IoIosChatboxes } from "react-icons/io";
 import toast from "react-hot-toast";
+import { BACKEND_LINK } from "../utils/baseApi";
 
 function Login() {
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ function Login() {
     if (handleValidation()) {
       const { password, username } = values;
       try {
-        const { data } = await axios.post(loginRoute, {
+        const { data } = await axios.post(`${BACKEND_LINK}/auth/login`, {
           username,
           password,
         });

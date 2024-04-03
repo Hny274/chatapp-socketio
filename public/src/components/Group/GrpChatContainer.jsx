@@ -1,14 +1,10 @@
 import React, { useState, useEffect, useRef } from "react";
-import ChatInput from "./GrpChatInput";
+import GrpChatInput from "./GrpChatInput";
 import axios from "axios";
-import { getGroupData, sendGroupMessageRoute } from "../../utils/APIRoutes";
 import { IoMdClose } from "react-icons/io";
+import { BACKEND_LINK } from "../../utils/baseApi";
 
-export default function GrpChatContainer({
-  socket,
-  currentGroupChat,
-  currentUser,
-}) {
+const GrpChatContainer = ({ socket, currentGroupChat, currentUser }) => {
   const [grpData, setGrpData] = useState([]);
   const [arrivalMessage, setArrivalMessage] = useState(null);
   const scrollRef = useRef();
@@ -19,31 +15,24 @@ export default function GrpChatContainer({
     const fetchGroupData = async () => {
       try {
         const response = await axios.get(
-          `${getGroupData}/getGroup/${currentGroupChat._id}`
+          `${BACKEND_LINK}/group/getGroup/${currentGroupChat._id}`
         );
         setGrpData(response.data);
       } catch (error) {
-        console.error("Error fetching messages:", error);
+        console.error("Error fetching group data:", error);
       }
     };
 
-    fetchGroupData();
+    if (currentGroupChat) {
+      fetchGroupData();
+    }
   }, [currentGroupChat]);
 
   useEffect(() => {
     if (socket.current) {
-      socket.current.on(
-        "msg-receive-grp",
-        ({ groupId, message, sender, createdAt }) => {
-          console.log({ groupId, message, sender, createdAt });
-          setArrivalMessage({
-            groupId: groupId,
-            sender: sender,
-            message: message,
-            createdAt: createdAt,
-          });
-        }
-      );
+      socket.current.on("msg-receive-grp", (data) => {
+        setArrivalMessage(data);
+      });
     }
   }, [socket]);
 
@@ -52,31 +41,21 @@ export default function GrpChatContainer({
     if (scrollContainer) {
       scrollContainer.scrollTop = scrollContainer.scrollHeight;
     }
-  }, [scrollRef.current, grpData]);
-
-  const formatDateForDisplay = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString(undefined, {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
+  }, [grpData.messages]);
 
   useEffect(() => {
-    arrivalMessage &&
+    if (arrivalMessage) {
       setGrpData((prevData) => ({
         ...prevData,
         messages: [...(prevData.messages || []), arrivalMessage],
       }));
-    console.log(grpData);
+    }
   }, [arrivalMessage]);
 
   const handleSendMsg = async (msg) => {
     const timestamp = Date.now();
     try {
-      await axios.post(sendGroupMessageRoute, {
+      await axios.post(`${BACKEND_LINK}/group/addMessage`, {
         groupId: currentGroupChat._id,
         message: msg,
         sender: currentUser._id,
@@ -108,6 +87,16 @@ export default function GrpChatContainer({
     }
   };
 
+  const formatDateForDisplay = (timestamp) => {
+    const date = new Date(timestamp);
+    return date.toLocaleDateString(undefined, {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  };
+
   return (
     <>
       {viewImage && (
@@ -132,8 +121,8 @@ export default function GrpChatContainer({
           className="px-8 flex flex-col gap-4 overflow-y-scroll h-full pb-2 bg-[#1b2028] my-4"
           ref={scrollRef}
         >
-          {grpData &&
-            grpData?.messages?.map((msg, index) => (
+          {grpData.messages &&
+            grpData.messages.map((msg, index) => (
               <React.Fragment key={index}>
                 {index === 0 ||
                 formatDateForDisplay(msg.createdAt) !==
@@ -154,14 +143,14 @@ export default function GrpChatContainer({
                   }`}
                 >
                   <div className="flex flex-col items-start justify-end">
-                    {!msg.message?.includes("cloudinary") ? (
-                      <div
-                        className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
-                          msg.sender?._id === currentUser._id
-                            ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
-                            : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
-                        }`}
-                      >
+                    <div
+                      className={`max-w-[40%] overflow-wrap break-word px-4 py-2 ${
+                        msg.sender?._id === currentUser._id
+                          ? "ml-auto rounded-l-xl rounded-t-xl text-white bg-[#373b41]"
+                          : "bg-purple-600 rounded-r-xl rounded-t-xl text-gray-100"
+                      }`}
+                    >
+                      {msg.sender?._id !== currentUser._id && (
                         <p
                           className={`text-white/60 text-sm tracking-wider ${
                             msg.sender?._id === currentUser._id && "ml-auto"
@@ -169,23 +158,25 @@ export default function GrpChatContainer({
                         >
                           {msg.sender.username}
                         </p>
+                      )}
+                      {!msg.message?.includes("cloudinary") ? (
                         <p>{msg.message}</p>
-                      </div>
-                    ) : (
-                      <img
-                        onClick={() => {
-                          setImage(msg.message);
-                          setViewImage(true);
-                        }}
-                        src={msg.message}
-                        className={`max-w-[40%] ${
-                          msg.sender?._id === currentUser._id
-                            ? "ml-auto rounded-l-xl rounded-t-xl text-white border-4 border-[#373b41]"
-                            : "border-purple-600 border-4 rounded-r-xl rounded-t-xl text-gray-100"
-                        }`}
-                        alt=""
-                      />
-                    )}
+                      ) : (
+                        <img
+                          onClick={() => {
+                            setImage(msg.message);
+                            setViewImage(true);
+                          }}
+                          src={msg.message}
+                          className={`max-w-[40%] ${
+                            msg.sender?._id === currentUser._id
+                              ? "ml-auto rounded-l-xl rounded-t-xl text-white border-4 border-[#373b41]"
+                              : "border-purple-600 border-4 rounded-r-xl rounded-t-xl text-gray-100"
+                          }`}
+                          alt=""
+                        />
+                      )}
+                    </div>
                     <p
                       className={`text-white/60 text-sm mt-1 tracking-wider ${
                         msg.sender?._id === currentUser._id && "ml-auto"
@@ -198,11 +189,13 @@ export default function GrpChatContainer({
               </React.Fragment>
             ))}
         </div>
-        <ChatInput handleSendMsg={handleSendMsg} />
+        <GrpChatInput handleSendMsg={handleSendMsg} />
       </div>
     </>
   );
-}
+};
+
+export default GrpChatContainer;
 
 const formatDate = (date) => {
   const parsedDate =

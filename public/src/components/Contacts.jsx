@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import Logout from "./Logout";
 import { useNavigate } from "react-router-dom";
 import FriendList from "./FriendList";
@@ -12,9 +12,19 @@ export default function Contacts({
   setGroup,
   setCurrentGroupChat,
   currentGroupChat,
+  setCurrentChat,
+  tab,
+  setTab,
+  socket,
 }) {
   const navigate = useNavigate();
-  const [tab, setTab] = useState(1);
+
+  const handleTabClick = (tabNumber, setGroupValue, setCurrentChatValue) => {
+    setTab(tabNumber);
+    setGroup(setGroupValue);
+    setCurrentGroupChat(undefined);
+    setCurrentChatValue(undefined);
+  };
 
   return (
     <>
@@ -27,10 +37,7 @@ export default function Contacts({
                   ? "text-[#fff] bg-[#1b2028] "
                   : "text-[#757677] hover:bg-[#1b202880]"
               }`}
-              onClick={() => {
-                setTab(1);
-                setGroup(false);
-              }}
+              onClick={() => handleTabClick(1, false, setCurrentChat)}
             >
               All Chats
             </button>
@@ -40,10 +47,7 @@ export default function Contacts({
                   ? "text-[#fff] bg-[#1b2028] "
                   : "text-[#757677] hover:bg-[#1b202880]"
               }`}
-              onClick={() => {
-                setTab(2);
-                setGroup(true);
-              }}
+              onClick={() => handleTabClick(2, true, setCurrentGroupChat)}
             >
               Groups
             </button>
@@ -54,6 +58,7 @@ export default function Contacts({
               currentUser={currentUser}
               changeChat={changeChat}
               setContacts={setContacts}
+              socket={socket}
             />
           )}
           {tab === 2 && (

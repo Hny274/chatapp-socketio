@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
-import { registerRoute } from "../utils/APIRoutes";
 import { IoIosChatboxes } from "react-icons/io";
 import toast from "react-hot-toast";
+import { BACKEND_LINK } from "../utils/baseApi";
 function Register() {
   const navigate = useNavigate();
   const [values, setValues] = useState({
@@ -22,7 +22,7 @@ function Register() {
     if (handleValidation()) {
       const { password, username, email } = values;
       try {
-        const { data } = await axios.post(registerRoute, {
+        const { data } = await axios.post(`${BACKEND_LINK}/auth/register`, {
           username,
           email,
           password,
