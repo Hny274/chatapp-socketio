@@ -36,7 +36,8 @@ function Register() {
         }
       } catch (error) {
         console.error("Register Error:", error);
-        toast.error("An error occurred. Please try again later.");
+        toast.dismiss();
+        toast.error(error.response.data.message);
       }
     }
   };

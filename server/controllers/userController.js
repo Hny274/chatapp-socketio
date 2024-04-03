@@ -1,6 +1,6 @@
 const User = require("../model/userModel");
 const Message = require("../model/messageModel");
-const brcypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 const ResetToken = require("../model/resetTokenModel");
 const { sendMail } = require("../utils/reset-mail.js");
 const jwt = require("jsonwebtoken");
@@ -16,7 +16,7 @@ module.exports.register = async (req, res, next) => {
     if (emailCheck)
       return res.json({ msg: "Email already used", status: false });
 
-    const hashedPassword = await brcypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await User.create({
       email,
       username,
@@ -38,7 +38,7 @@ module.exports.login = async (req, res, next) => {
         msg: "Incorrect username and password ",
         status: false,
       });
-    const isPasswordValid = await brcypt.compare(password, user.password);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.json({
         msg: "Incorrect username and password ",
@@ -69,6 +69,38 @@ module.exports.forgotPassword = async (req, res) => {
     await resetToken.save();
     sendMail(user.email, resetToken._id);
     return res.status(200).json({ message: "Reset password email sent" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+exports.updatePassword = async (req, res) => {
+  const { token, password } = req.body;
+  try {
+    if (!token) {
+      return res.status(404).json({ message: "Token not found" });
+    }
+    const resetTokenData = await ResetToken.findById(token);
+    if (!resetTokenData) {
+      return res.status(404).json({ message: "Token not found" });
+    }
+    try {
+      const tokenData = jwt.verify(
+        resetTokenData.token,
+        process.env.JWT_SECRET
+      );
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await User.findByIdAndUpdate(tokenData.userId, {
+        password: hashedPassword,
+      });
+      await ResetToken.findByIdAndDelete(token);
+
+      return res.status(200).json({ message: "Password updated successfully" });
+    } catch (error) {
+      console.error("Error verifying JWT:", error);
+      return res.status(401).json({ message: "Invalid Token" });
+    }
   } catch (error) {
     console.error("Error resetting password:", error);
     return res.status(500).json({ message: "Internal server error" });

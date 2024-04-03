@@ -10,8 +10,6 @@ const transporter = nodemailer.createTransport({
 });
 
 exports.sendMail = (to, token) => {
-  console.log(process.env.NODEMAILER_USER);
-  console.log(process.env.NODEMAILER_PASS);
   const mailOptions = {
     from: `Chat App ${process.env.NODEMAILER_USER}`,
     to,

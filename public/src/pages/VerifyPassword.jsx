@@ -1,56 +1,41 @@
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { IoIosChatboxes } from "react-icons/io";
 import toast from "react-hot-toast";
 import { BACKEND_LINK } from "../utils/baseApi";
+import { useLocation } from "react-router-dom";
 
-function Login() {
+function VerifyPassword() {
   const navigate = useNavigate();
+  const router = useLocation();
   const [values, setValues] = useState({
-    username: "",
     password: "",
+    cpassword: "",
   });
-
-  const toastOptions = {
-    position: "bottom-right",
-    autoClose: 8000,
-    pauseOnHover: true,
-    draggable: true,
-    theme: "dark",
-  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (handleValidation()) {
-      const { password, username } = values;
-      try {
-        const { data } = await axios.post(`${BACKEND_LINK}/auth/login`, {
-          username,
-          password,
-        });
-        if (data.status === false) {
-          toast.error(data.msg, toastOptions);
-        }
-        if (data.status === true) {
-          localStorage.setItem("chat-app-user", JSON.stringify(data.user));
-          navigate("/");
-        }
-      } catch (error) {
-        console.error("Login Error:", error);
-        toast.dismiss();
-        toast.error(error.response.data.message);
+    const { password, cpassword } = values;
+    if (password !== cpassword) {
+      toast.error("Enter Same Password");
+      return;
+    }
+    try {
+      const { data } = await axios.post(`${BACKEND_LINK}/auth/updatePassword`, {
+        password,
+        token: router.search.replace("?token=", ""),
+      });
+      if (data.status === false) {
+        toast.error(data.msg);
       }
+      toast.success("Password Updated!");
+      navigate("/login");
+    } catch (error) {
+      console.error("Verify Password Error:", error);
+      toast.dismiss();
+      toast.error(error.response.data.message);
     }
-  };
-
-  const handleValidation = () => {
-    const { password, username } = values;
-    if (password === "" || username === "") {
-      toast.error("Username and password are required", toastOptions);
-      return false;
-    }
-    return true;
   };
 
   const handleChange = (event) => {
@@ -68,62 +53,47 @@ function Login() {
             </div>
             <div>
               <label
-                htmlFor="username"
+                htmlFor="password"
                 className="block font-medium text-gray-800"
               >
-                Username
+                Updated Password
               </label>
               <input
-                type="text"
-                id="username"
-                name="username"
-                placeholder="Enter your username"
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
                 onChange={handleChange}
                 className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
             <div>
               <label
-                htmlFor="password"
+                htmlFor="cpassword"
                 className="block font-medium text-gray-800"
               >
-                Password
+                Confirm Password
               </label>
               <input
                 type="password"
-                id="password"
-                name="password"
-                placeholder="**********"
+                id="cpassword"
+                name="cpassword"
+                placeholder="Enter your password"
                 onChange={handleChange}
                 className="mt-1 w-full rounded-md bg-transparent px-3 py-3 outline-none border border-gray-800"
               />
             </div>
-            <Link
-              to="/forget-password"
-              className="text-purple-500 ml-auto hover:underline"
-            >
-              Forget Password?
-            </Link>
             <button
               type="submit"
               className="px-3 mt-2 py-2 rounded-md bg-purple-600 text-white mb-4 text-xl transition-animate hover:bg-purple-700"
             >
-              Login
+              Reset Password
             </button>
           </form>
-          <p className="text-center w-full">
-            Don't have an account?
-            <Link
-              to="/register"
-              className="text-purple-500 ml-2 hover:underline"
-            >
-              Register
-            </Link>
-          </p>
         </div>
       </div>
     </>
   );
 }
 
-export default Login;
+export default VerifyPassword;
