@@ -117,22 +117,20 @@ const FriendList = ({
           {contacts.map((contact, index) => (
             <div
               key={index}
-              className={`flex items-center gap-4 cursor-pointer relative w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out ${
-                index === currentSelected ? "bg-purple-600" : ""
-              }`}
+              className={`flex items-center gap-4 cursor-pointer w-[95%] bg-[#242930] rounded p-3 transition duration-500 ease-in-out`}
               onClick={() => changeCurrentChat(index, contact)}
             >
-              <div>
+              <div className="relative">
                 <img
                   src={`${contact.avatarImage}`}
                   alt="avatar"
                   className="h-10"
                 />
+                {activeUsers.includes(contact._id) && (
+                  <div className="bg-green-400 h-3 w-3 absolute bottom-0 right-0 rounded-full shadow shadow-green-400/80 "></div>
+                )}
               </div>
               <p className="text-white text-lg">{contact.username}</p>
-              {activeUsers.includes(contact._id) && (
-                <div className="bg-green-500 h-3 w-3 absolute top-2 right-2 rounded-full shadow shadow-green-400/20 "></div>
-              )}
             </div>
           ))}
         </div>
