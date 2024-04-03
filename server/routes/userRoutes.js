@@ -1,6 +1,7 @@
 const {
   login,
   register,
+  forgotPassword,
   getAllUsers,
   setAvatar,
   logout,
@@ -14,6 +15,7 @@ const router = require("express").Router();
 
 router.post("/login", login);
 router.post("/register", register);
+router.post("/forgotPassword", forgotPassword);
 router.get("/allusers/:id", getAllUsers);
 router.post("/setAvatar/:id", setAvatar);
 router.get("/logout/:id", logout);
@@ -22,6 +24,5 @@ router.post("/:userId/remove-friend/:friendId", removeFriend);
 router.post("/getFriends/:id", getFriends);
 router.get("/searchUser", searchUser);
 router.get("/getUser/:id", getUserData);
-
 
 module.exports = router;

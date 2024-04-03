@@ -7,7 +7,9 @@ import { Cloudinary } from "cloudinary-core";
 export default function GrpChatInput({ handleSendMsg }) {
   const [uploading, setUploading] = useState(false);
   const [msg, setMsg] = useState("");
-  const cloudinary = new Cloudinary({ cloud_name: "db7j1qgnq" });
+  const cloudinary = new Cloudinary({
+    cloud_name: process.env.REACT_APP_CLOUD_NAME,
+  });
 
   const handleFileUpload = async (event) => {
     setUploading(true);

@@ -168,7 +168,7 @@ const GrpChatContainer = ({ socket, currentGroupChat, currentUser }) => {
                             setViewImage(true);
                           }}
                           src={msg.message}
-                          className={`max-w-[40%] ${
+                          className={`max-w-[100%] ${
                             msg.sender?._id === currentUser._id
                               ? "ml-auto rounded-l-xl rounded-t-xl text-white border-4 border-[#373b41]"
                               : "border-purple-600 border-4 rounded-r-xl rounded-t-xl text-gray-100"

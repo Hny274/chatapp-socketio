@@ -5,7 +5,8 @@ const socket = require("socket.io");
 const userRoutes = require("./routes/userRoutes");
 const messageRoutes = require("./routes/messagesRoute");
 const groupRoutes = require("./routes/groupRoute");
-require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config();
 
 const app = express();
 
@@ -47,7 +48,6 @@ const emitActiveUserList = () => {
 };
 
 io.on("connection", (socket) => {
-
   socket.on("add-user", (userId) => {
     onlineUsers.set(userId, socket.id);
     emitActiveUserList();

@@ -1,6 +1,9 @@
 const User = require("../model/userModel");
 const Message = require("../model/messageModel");
 const brcypt = require("bcrypt");
+const ResetToken = require("../model/resetTokenModel");
+const { sendMail } = require("../utils/reset-mail.js");
+const jwt = require("jsonwebtoken");
 
 module.exports.register = async (req, res, next) => {
   try {
@@ -47,6 +50,28 @@ module.exports.login = async (req, res, next) => {
     return res.json({ status: true, user });
   } catch (er) {
     next(er);
+  }
+};
+
+const generateToken = (userId) => {
+  return jwt.sign({ userId }, process.env.JWT_SECRET, { expiresIn: "1h" });
+};
+
+module.exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    const token = generateToken(user._id);
+    const resetToken = new ResetToken({ token });
+    await resetToken.save();
+    sendMail(user.email, resetToken._id);
+    return res.status(200).json({ message: "Reset password email sent" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    return res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -137,14 +162,18 @@ exports.removeFriend = async (req, res) => {
       return res.status(400).json({ message: "They are not friends" });
     }
 
-    user.friendList = user.friendList.filter(id => id.toString() !== friendId);
-    friend.friendList = friend.friendList.filter(id => id.toString() !== userId);
+    user.friendList = user.friendList.filter(
+      (id) => id.toString() !== friendId
+    );
+    friend.friendList = friend.friendList.filter(
+      (id) => id.toString() !== userId
+    );
 
     await Message.deleteMany({
       $or: [
         { sender: userId, users: { $all: [userId, friendId] } },
-        { sender: friendId, users: { $all: [userId, friendId] } }
-      ]
+        { sender: friendId, users: { $all: [userId, friendId] } },
+      ],
     });
 
     await user.save();
@@ -156,8 +185,6 @@ exports.removeFriend = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-
-
 
 exports.getFriends = async (req, res) => {
   try {
@@ -189,7 +216,7 @@ exports.searchUser = async (req, res) => {
 
 exports.getUserData = async (req, res) => {
   try {
-    const { id } = req.params
+    const { id } = req.params;
     const user = await User.findById(id).select("-password").populate("group");
     res.status(200).json({
       message: "User get successfully",
