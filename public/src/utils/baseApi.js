@@ -1,2 +1,2 @@
-export const BACKEND_LINK = "http://localhost:5000/api/v1"
-export const SOCKET_HOST = "http://localhost:5000"
+export const BACKEND_LINK = `${process.env.REACT_APP_HOST}/api/v1`
+export const SOCKET_HOST = `${process.env.REACT_APP_HOST}`

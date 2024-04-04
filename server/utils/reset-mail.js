@@ -14,7 +14,7 @@ exports.sendMail = (to, token) => {
     from: `Chat App ${process.env.NODEMAILER_USER}`,
     to,
     subject: "Password Reset",
-    text: `Reset your password by clicking on the following link: http://localhost:3000/verify-token?token=${token}`,
+    text: `Reset your password by clicking on the following link: ${process.env.FRONTEND_LINK}/verify-token?token=${token}`,
   };
 
   transporter.sendMail(mailOptions, function (error, info) {
