@@ -21,7 +21,7 @@ module.exports.register = async (req, res, next) => {
       email,
       username,
       password: hashedPassword,
-    });
+    }).select("-password");
     delete user.password;
     return res.json({ status: true, user });
   } catch (er) {
@@ -47,9 +47,25 @@ module.exports.login = async (req, res, next) => {
     }
     delete user.password;
 
-    return res.json({ status: true, user });
-  } catch (er) {
-    next(er);
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+
+    return res.json({ status: true, user, token, token });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports.getMyDetails = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select("-password");
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.log(err)
+    return res.status(500).json({ message: "Internal server error" });
+
   }
 };
 

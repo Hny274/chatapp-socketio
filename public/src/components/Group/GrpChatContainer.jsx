@@ -45,12 +45,14 @@ const GrpChatContainer = ({ socket, currentGroupChat, currentUser }) => {
 
   useEffect(() => {
     if (arrivalMessage) {
-      setGrpData((prevData) => ({
-        ...prevData,
-        messages: [...(prevData.messages || []), arrivalMessage],
-      }));
+      if (arrivalMessage.groupId === currentGroupChat._id) {
+        setGrpData((prevData) => ({
+          ...prevData,
+          messages: [...(prevData.messages || []), arrivalMessage],
+        }));
+      }
     }
-  }, [arrivalMessage]);
+  }, [arrivalMessage, currentGroupChat._id]);
 
   const handleSendMsg = async (msg) => {
     const timestamp = Date.now();

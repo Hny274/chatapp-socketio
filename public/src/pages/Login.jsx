@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { IoIosChatboxes } from "react-icons/io";
 import toast from "react-hot-toast";
 import { BACKEND_LINK } from "../utils/baseApi";
+import { useUser } from "../context/userContext";
 
 function Login() {
   const navigate = useNavigate();
@@ -19,6 +20,13 @@ function Login() {
     draggable: true,
     theme: "dark",
   };
+  const { user, login } = useUser();
+
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [navigate, user]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -33,7 +41,8 @@ function Login() {
           toast.error(data.msg, toastOptions);
         }
         if (data.status === true) {
-          localStorage.setItem("chat-app-user", JSON.stringify(data.user));
+          login(data.user);
+          localStorage.setItem("chat-token", data.token);
           navigate("/");
         }
       } catch (error) {

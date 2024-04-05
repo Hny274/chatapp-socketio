@@ -30,9 +30,8 @@ function Register() {
         if (data.status === false) {
           toast.error(data.msg);
         } else {
-          localStorage.setItem("chat-app-user", JSON.stringify(data.user));
           toast.success("Registration successful!");
-          navigate("/");
+          navigate("/login");
         }
       } catch (error) {
         console.error("Register Error:", error);

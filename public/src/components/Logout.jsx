@@ -1,11 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { BiPowerOff } from "react-icons/bi";
+import { useUser } from "../context/userContext";
 
 export default function Logout() {
+  const { logout } = useUser();
   const navigate = useNavigate();
   const handleClick = () => {
     localStorage.clear();
+    logout();
     navigate("/login");
   };
 

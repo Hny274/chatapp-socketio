@@ -10,6 +10,7 @@ import GrpChatContainer from "../components/Group/GrpChatContainer";
 import GrpHeader from "../components/Group/GrpHeader";
 import ChatHeader from "../components/ChatHeader";
 import { BACKEND_LINK, SOCKET_HOST } from "../utils/baseApi";
+import { useUser } from "../context/userContext";
 
 export default function Chat() {
   const socket = useRef();
@@ -22,7 +23,7 @@ export default function Chat() {
   const [group, setGroup] = useState();
   const [currentGroupChat, setCurrentGroupChat] = useState();
   const [groupData, setGroupData] = useState();
-
+  const { user, logout, login } = useUser();
   useEffect(() => {
     const fetchGroupData = async () => {
       try {
@@ -39,14 +40,30 @@ export default function Chat() {
   }, [currentGroupChat]);
 
   useEffect(() => {
+    const getUserData = async (token) => {
+      try {
+        const resp = await axios.get(`${BACKEND_LINK}/auth/myDetails`, {
+          data: {},
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        login(resp.data);
+        setCurrentUser(resp.data);
+        setIsLoaded(true);
+      } catch (error) {
+        logout();
+        navigate("/login");
+      }
+    };
+
     const fetchData = async () => {
       try {
-        if (!localStorage.getItem("chat-app-user")) {
+        if (!localStorage.getItem("chat-token")) {
           navigate("/login");
         } else {
-          const user = JSON.parse(localStorage.getItem("chat-app-user"));
-          setCurrentUser(user);
-          setIsLoaded(true);
+          getUserData(localStorage.getItem("chat-token"));
+          setIsLoaded(false);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
