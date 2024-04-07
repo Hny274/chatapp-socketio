@@ -15,7 +15,7 @@ const GrpChatContainer = ({ socket, currentGroupChat, currentUser }) => {
     const fetchGroupData = async () => {
       try {
         const response = await axios.get(
-          `${BACKEND_LINK}/group/getGroup/${currentGroupChat._id}`
+          `${BACKEND_LINK}/group/getGroup/${currentGroupChat?._id}`
         );
         setGrpData(response.data);
       } catch (error) {
@@ -45,14 +45,14 @@ const GrpChatContainer = ({ socket, currentGroupChat, currentUser }) => {
 
   useEffect(() => {
     if (arrivalMessage) {
-      if (arrivalMessage.groupId === currentGroupChat._id) {
+      if (arrivalMessage?.groupId === currentGroupChat?._id) {
         setGrpData((prevData) => ({
           ...prevData,
           messages: [...(prevData.messages || []), arrivalMessage],
         }));
       }
     }
-  }, [arrivalMessage, currentGroupChat._id]);
+  }, [arrivalMessage, currentGroupChat?._id]);
 
   const handleSendMsg = async (msg) => {
     const timestamp = Date.now();
@@ -64,10 +64,10 @@ const GrpChatContainer = ({ socket, currentGroupChat, currentUser }) => {
       });
 
       socket.current.emit("send-msg-grp", {
-        groupId: currentGroupChat._id,
+        groupId: currentGroupChat?._id,
         message: msg,
         sender: {
-          _id: currentUser._id,
+          _id: currentUser?._id,
           username: currentUser.username,
         },
         createdAt: timestamp,
