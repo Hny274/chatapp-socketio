@@ -53,6 +53,7 @@ export default function Chat() {
         setIsLoaded(true);
       } catch (error) {
         logout();
+        localStorage.clear();
         navigate("/login");
       }
     };

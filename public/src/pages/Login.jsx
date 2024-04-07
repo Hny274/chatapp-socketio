@@ -23,7 +23,7 @@ function Login() {
   const { user, login } = useUser();
 
   useEffect(() => {
-    if (user) {
+    if (localStorage.getItem("chat-token")) {
       navigate("/");
     }
   }, [navigate, user]);
